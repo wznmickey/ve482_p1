@@ -16,6 +16,7 @@ about: issue template for adding feature
 - [ ] <Criteria-1>
 - [ ] <Criteria-2>
 - [ ] <Criteria-3>
+- [ ] updated the README and docs to fit the changes
 
 
 **Fallback**
