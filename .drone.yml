@@ -1,0 +1,21 @@
+
+kind: pipeline
+type: ssh
+name: default
+server:
+  host:
+    from_secret: host
+  user:
+    from_secret: username
+  ssh_key:
+    from_secret: ssh_key
+steps:
+- name: cpplint
+  commands:
+  - cpplint --linelength=120 --filter=-legal,-readability/casting,-whitespace,-runtime/printf,-runtime/threadsafe_fn,-readability/todo,-build/include_subdir,-build/header_guard *.h *.c
+- name: cppcheck
+  commands:
+  - cppcheck *.h *.c
+- name: compile
+  commands:
+  - gcc -o mumsh *.c -Wall -Wextra -Werror -pedantic -Wno-unused-result -Wconversion
