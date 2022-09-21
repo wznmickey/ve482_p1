@@ -30,7 +30,7 @@ int main() {
     if (pid == 0) {
       int status_code = execvp(input, arg);
       if (status_code == -1) {
-        printf("Command wrong with error code %d.", status_code);
+        printf("Command wrong with error code %d.\n", status_code);
         flush();
         return status_code;
       }
