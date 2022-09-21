@@ -7,7 +7,7 @@ String *initString(char input[]) {
   String *val = malloc(sizeof(String));
   val->sizeIndex = getNextLen((int)strlen(input));
   val->size = STRING_LEN[val->sizeIndex];
-  val->start = malloc(sizeof(char) * val->size);
+  val->start = malloc(sizeof(char) * (size_t) val->size);
   val->len = (int)strlen(input);
   strcpy(val->start, input);
   val->mallocStart = val;
