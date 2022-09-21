@@ -9,19 +9,23 @@ void flush() {
   fflush(stdout);
   return;
 }
+#define printf(...)                                                            \
+  printf(__VA_ARGS__);                                                         \
+  flush();
+#define fgets(...)                                                             \
+  fgets(__VA_ARGS__);                                                          \
+  flush();
+
 int main() {
   char input[2048];
   char *arg[2048];
   while (true) {
     printf("mumsh $ ");
-    flush();
     memset(input, 0, sizeof(char) * 2048);
     fgets(input, 2048 - 1, stdin);
-    flush();
     input[strlen(input) - 1] = '\0'; // remove the \n at the end.
     if (strcmp(input, "exit") == 0) {
       printf("exit\n");
-      flush();
       return 0;
     }
     arg[0] = input;
@@ -31,7 +35,6 @@ int main() {
       int status_code = execvp(input, arg);
       if (status_code == -1) {
         printf("Command wrong with error code %d.\n", status_code);
-        flush();
         return status_code;
       }
     } else {
