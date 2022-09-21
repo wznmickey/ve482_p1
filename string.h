@@ -1,3 +1,5 @@
+#ifndef WZNMICKEY_STRING
+#define WZNMICKEY_STRING
 #include <stdbool.h>
 typedef struct string {
   char *start;
@@ -18,3 +20,4 @@ string *initString(char input[]);
 string *deleteString(string *val);
 int changeString(string *st, char aim, char newOne);
 string *spiltString(string *st, char aim);
+#endif
