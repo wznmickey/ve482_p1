@@ -1,13 +1,12 @@
 
 #include "String.h"
+#include <alloca.h>
 #include <stdlib.h>
 #include <string.h>
 // since the string is not very long. Use int rather than size_t.
 String *initString(char input[]) {
   String *val = malloc(sizeof(String));
-  val->sizeIndex = getNextLen((int)strlen(input));
-  val->size = STRING_LEN[val->sizeIndex];
-  val->start = malloc(sizeof(char) * (size_t) val->size);
+  val->start = malloc(sizeof(char) * strlen(input) + 5); // use +5 as buffer
   val->len = (int)strlen(input);
   strcpy(val->start, input);
   val->mallocStart = val;
@@ -15,6 +14,9 @@ String *initString(char input[]) {
   return val;
 }
 String *deleteString(String *val) {
+  if (val == NULL) {
+    return NULL;
+  }
   if ((val->used == 1) &&
       (val->mallocStart ==
        val)) // it is the first string and the full block is useless
@@ -41,33 +43,6 @@ String *deleteString(String *val) {
     }
   }
   return NULL;
-}
-int getNextLen(int x) {
-  if (x <= 3) {
-    return 0;
-  }
-  if (x <= 7) {
-    return 1;
-  }
-  if (x <= 15) {
-    return 2;
-  }
-  if (x <= 31) {
-    return 3;
-  }
-  if (x <= 63) {
-    return 4;
-  }
-  if (x <= 127) {
-    return 5;
-  }
-  if (x <= 255) {
-    return 6;
-  }
-  if (x <= 511) {
-    return 7;
-  }
-  return 8;
 }
 int findString(String *st, char aim) {
   for (int i = 0; i < st->len; i++) {
@@ -97,13 +72,18 @@ String *spiltString(String *st, char aim) {
   val->mallocStart = st->mallocStart;
   val->start = st->start + find + 1;
   val->len = (int)strlen(val->start);
-  val->size = st->size; // It is meaningless. Just to init. The value will not
-                        // be updated.
-  val->sizeIndex = st->sizeIndex; // It is meaningless. Just to init. The value
-                                  // will not be updated.
   val->used =
       1; // It is meaningless. Just to init. The value will not be updated.
   st->len = (int)strlen(st->start);
   st->mallocStart->used++;
   return val;
+}
+String *copyString(String *st) {
+  String *temp = malloc(sizeof(String));
+  temp->len = st->len;
+  temp->used = st->used;
+  temp->start = malloc(sizeof(char) * (st->len));
+  temp->mallocStart = temp;
+  strcpy(temp->start, st->start);
+  return temp;
 }
