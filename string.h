@@ -16,3 +16,5 @@ const int STRING_LEN[9] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048};
 int getNextLen(int x);
 string *initString(char input[]);
 string *deleteString(string *val);
+int changeString(string *st, char aim, char newOne);
+string *spiltString(string *st, char aim);

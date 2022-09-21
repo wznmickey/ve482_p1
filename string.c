@@ -1,7 +1,7 @@
 #include "string.h"
 #include <stdlib.h>
 #include <string.h>
-
+// since the string is not very long. Use int rather than size_t.
 string *initString(char input[]) {
   string *val = malloc(sizeof(string));
   val->sizeIndex = getNextLen(strlen(input));
@@ -57,4 +57,40 @@ int getNextLen(int x) {
   if (x <= 511)
     return 7;
   return 8;
+}
+int findString(string *st, char aim) {
+  for (int i = 0; i < st->len; i++) {
+    if (st->start[i] == aim) {
+      return i;
+    }
+  }
+  return -1; // Not found
+}
+
+int changeString(string *st, char aim, char newOne) {
+  int x = findString(st, aim);
+  if (x == -1)
+    return -1; // failed
+  st->start[x] = newOne;
+  return x;
+}
+
+string *spiltString(string *st, char aim) {
+  int find = changeString(st, aim, '\0');
+  if (find == -1)
+    return NULL; // failed
+  string *val = malloc(sizeof(string));
+
+  val->mallocStart = st->mallocStart;
+  val->start = st->start + find + 1;
+  val->len = strlen(val->start);
+  val->size = st->size; // It is meaningless. Just to init. The value will not
+                        // be updated.
+  val->sizeIndex = st->sizeIndex; // It is meaningless. Just to init. The value
+                                  // will not be updated.
+  val->used =
+      1; // It is meaningless. Just to init. The value will not be updated.
+  st->len = strlen(st->start);
+  st->mallocStart->used++;
+  return val;
 }
