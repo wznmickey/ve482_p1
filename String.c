@@ -5,10 +5,10 @@
 // since the string is not very long. Use int rather than size_t.
 String *initString(char input[]) {
   String *val = malloc(sizeof(String));
-  val->sizeIndex = getNextLen(strlen(input));
+  val->sizeIndex = getNextLen((int)strlen(input));
   val->size = STRING_LEN[val->sizeIndex];
   val->start = malloc(sizeof(char) * val->size);
-  val->len = strlen(input);
+  val->len = (int)strlen(input);
   strcpy(val->start, input);
   val->mallocStart = val;
   val->used = 1; // itself
@@ -43,22 +43,30 @@ String *deleteString(String *val) {
   return NULL;
 }
 int getNextLen(int x) {
-  if (x <= 3)
+  if (x <= 3) {
     return 0;
-  if (x <= 7)
+  }
+  if (x <= 7) {
     return 1;
-  if (x <= 15)
+  }
+  if (x <= 15) {
     return 2;
-  if (x <= 31)
+  }
+  if (x <= 31) {
     return 3;
-  if (x <= 63)
+  }
+  if (x <= 63) {
     return 4;
-  if (x <= 127)
+  }
+  if (x <= 127) {
     return 5;
-  if (x <= 255)
+  }
+  if (x <= 255) {
     return 6;
-  if (x <= 511)
+  }
+  if (x <= 511) {
     return 7;
+  }
   return 8;
 }
 int findString(String *st, char aim) {
@@ -72,28 +80,30 @@ int findString(String *st, char aim) {
 
 int changeString(String *st, char aim, char newOne) {
   int x = findString(st, aim);
-  if (x == -1)
+  if (x == -1) {
     return -1; // failed
+  }
   st->start[x] = newOne;
   return x;
 }
 
 String *spiltString(String *st, char aim) {
   int find = changeString(st, aim, '\0');
-  if (find == -1)
+  if (find == -1) {
     return NULL; // failed
+  }
   String *val = malloc(sizeof(String));
 
   val->mallocStart = st->mallocStart;
   val->start = st->start + find + 1;
-  val->len = strlen(val->start);
+  val->len = (int)strlen(val->start);
   val->size = st->size; // It is meaningless. Just to init. The value will not
                         // be updated.
   val->sizeIndex = st->sizeIndex; // It is meaningless. Just to init. The value
                                   // will not be updated.
   val->used =
       1; // It is meaningless. Just to init. The value will not be updated.
-  st->len = strlen(st->start);
+  st->len = (int)strlen(st->start);
   st->mallocStart->used++;
   return val;
 }
