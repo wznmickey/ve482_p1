@@ -1,6 +1,6 @@
 #include "string.h"
 #include <stdlib.h>
-#include <string.h>
+
 // since the string is not very long. Use int rather than size_t.
 string *initString(char input[]) {
   string *val = malloc(sizeof(string));
@@ -21,21 +21,25 @@ string *deleteString(string *val) {
   {
     free(val->start);
     free(val);
-  } else if (val->mallocStart->used ==
-             1) // it is not the first string but the full block is useless. Can
-                // not hebing with the above because we need make sure
-                // val!=val->mallocStart. Otherwise it is free twice.
-  {
-    free(val->mallocStart->start);
-    free(val->mallocStart);
-    free(val);
-  } else if (val->mallocStart ==
-             val) // it is the first string but the full block is useful
-  {
-    val->used--;
-  } else // it is not the first string and the full block is useful
-  {
-    val->mallocStart->used--;
+  } else {
+    if (val->mallocStart->used ==
+        1) // it is not the first string but the full block is useless. Can
+           // not hebing with the above because we need make sure
+           // val!=val->mallocStart. Otherwise it is free twice.
+    {
+      free(val->mallocStart->start);
+      free(val->mallocStart);
+      free(val);
+    } else {
+      if (val->mallocStart ==
+          val) // it is the first string but the full block is useful
+      {
+        val->used--;
+      } else // it is not the first string and the full block is useful
+      {
+        val->mallocStart->used--;
+      }
+    }
   }
   return NULL;
 }

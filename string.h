@@ -1,6 +1,7 @@
 #ifndef WZNMICKEY_STRING
 #define WZNMICKEY_STRING
 #include <stdbool.h>
+#include <string.h>
 typedef struct string {
   char *start;
   int len;
