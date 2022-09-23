@@ -1,7 +1,12 @@
 # mumsh
 
 ## How to build
-Directly compile main.c (C99 allowed).
+Use given `CMakeLists.txt` to compile. (If you failed to compile, use `-DCMAKE_C_COMPILER=clang`).
+
+## How to use
+This shell can be launched by `mumsh` if you use the given CMAKE file.
+
+Now running other exec files with arguments are supported. Other features will come soon.
 
 Now mumsh is in rapid development. 
 
