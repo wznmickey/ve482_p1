@@ -18,4 +18,7 @@ typedef struct command {
 } command;
 char **getArgFromCommand(command *output);
 void parse(String *input, command *output);
+void initCommand(command * c);
+void deleteArgList(ArgList *arg);
+command *deleteFullCommandList(command *c);
 #endif

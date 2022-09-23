@@ -26,6 +26,7 @@ void deleteArgList(ArgList *arg) {
     deleteString(arg->argc[i]);
   }
   arg->argv = 0;
+  free(arg->argc);
   free(arg);
 }
 
@@ -44,32 +45,34 @@ void extendArgList(ArgList **arg) {
   if (*arg == NULL) {
     return;
   }
-  if ((*arg)->argv >= (int)ARRAY_LEN[(*arg)->argvIndex] / 2) // extend in advance
+  if ((*arg)->argv >=
+      (int)ARRAY_LEN[(*arg)->argvIndex] / 2) // extend in advance
   {
     (*arg)->argvIndex++;
     ArgList *temp = malloc(sizeof(ArgList) * ARRAY_LEN[(*arg)->argvIndex]);
     pureMoveArgList(*arg, temp);
+    free(*arg);
     *arg = temp;
   }
   return;
 }
 
-bool pushArgList(ArgList *arg, String *val) {
+bool emplaceArgList(ArgList *arg, String *val) {
   if (arg == NULL) {
     return false;
   }
   extendArgList(&arg);
   arg->argc[arg->argv] = copyString(val);
+  deleteString(val);
   arg->argv++;
   return true;
 }
 char **getArgFromArgList(ArgList *arg) {
-  char **val = malloc(sizeof(char *) * (size_t)(arg->argv+1));
+  char **val = malloc(sizeof(char *) * (size_t)(arg->argv + 1));
   for (int i = 0; i < arg->argv; i++) {
     val[i] = getCharArray(arg->argc[i]);
   }
-  val[arg->argv]=NULL;
-  // printf("%d",(int)val[arg->argv]);
+  val[arg->argv] = NULL;
   return val;
 }
 char **getArgFromCommand(command *output) {
@@ -107,12 +110,40 @@ void parse(String *input, command *output) {
   while (true) {
     String *tempInputNew = spiltString(tempInput, ' ');
 
-    pushArgList(output->args, tempInput);
-
+    emplaceArgList(output->args, tempInput);
+    
     tempInput = tempInputNew;
     if (tempInput == NULL) {
       break;
     }
   }
   return;
+}
+void initCommand(command *c) {
+  c->mainCommand = NULL;
+  c->after = NULL;
+  c->args = NULL;
+  c->before = NULL;
+  c->stdin = NULL;
+  c->stdout = NULL;
+  return;
+}
+command *deleteCommand(command *c) {
+  if (c == NULL) {
+    return c;
+  }
+  deleteArgList(c->args);
+  deleteString(c->mainCommand);
+  deleteString(c->stdin);
+  deleteString(c->stdout);
+  free(c);
+  return NULL;
+}
+command *deleteFullCommandList(command *c) {
+  if (c == NULL) {
+    return c;
+  }
+  deleteFullCommandList(c->after);
+  deleteCommand(c);
+  return NULL;
 }

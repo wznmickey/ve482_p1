@@ -1,6 +1,7 @@
 
 #include "String.h"
 #include <alloca.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 // since the string is not very long. Use int rather than size_t.
@@ -14,6 +15,7 @@ String *initString(char input[]) {
   return val;
 }
 String *deleteString(String *val) {
+
   if (val == NULL) {
     return NULL;
   }
@@ -39,6 +41,7 @@ String *deleteString(String *val) {
       } else { // it is not the first string and the full block is useful
 
         val->mallocStart->used--;
+        free(val);
       }
     }
   }
@@ -81,8 +84,8 @@ String *spiltString(String *st, char aim) {
 String *copyString(String *st) {
   String *temp = malloc(sizeof(String));
   temp->len = st->len;
-  temp->used = st->used;
-  temp->start = malloc(sizeof(char) *(size_t) (st->len));
+  temp->used = 1;
+  temp->start = malloc(sizeof(char) * (size_t)(st->len + 1)); // 1 more for '\0'
   temp->mallocStart = temp;
   strcpy(temp->start, st->start);
   return temp;

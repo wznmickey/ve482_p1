@@ -31,6 +31,7 @@ int main() {
     }
     String *inputS = initString(input);
     command *command_us = malloc(sizeof(command));
+    initCommand(command_us);
     parse(inputS, command_us);
     char **usArg = getArgFromCommand(command_us);
     pid_t pid = fork();
@@ -38,10 +39,16 @@ int main() {
       int status_code = execvp(usArg[0], usArg);
       if (status_code == -1) {
         printf("Command wrong with error code %d.\n", status_code);
+        deleteFullCommandList(command_us);
+
+        free(usArg);
         return status_code;
       }
     } else {
       waitpid(pid, NULL, 0);
     }
+    deleteFullCommandList(command_us);
+
+    free(usArg);
   }
 }
