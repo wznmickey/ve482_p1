@@ -17,6 +17,6 @@ typedef struct command {
   struct command *after;
 } command;
 
-const int ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
+
 
 #endif

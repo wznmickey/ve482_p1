@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+const int ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 void initArgList(ArgList *arg) {
   if (arg == NULL) {
     return;
