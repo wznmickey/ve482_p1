@@ -20,7 +20,6 @@ void flush() {
 
 int main() {
   char input[2048];
-  char *arg[2048];
   while (true) {
     printf("mumsh $ ");
     memset(input, 0, sizeof(char) * 2048);

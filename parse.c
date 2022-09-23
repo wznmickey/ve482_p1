@@ -1,12 +1,13 @@
 #include "parse.h"
 #include "String.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-const int ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
+const size_t ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 void initArgList(ArgList *arg) {
   if (arg == NULL) {
     return;
@@ -43,7 +44,7 @@ void extendArgList(ArgList **arg) {
   if (*arg == NULL) {
     return;
   }
-  if ((*arg)->argv >= ARRAY_LEN[(*arg)->argvIndex] / 2) // extend in advance
+  if ((*arg)->argv >= (int)ARRAY_LEN[(*arg)->argvIndex] / 2) // extend in advance
   {
     (*arg)->argvIndex++;
     ArgList *temp = malloc(sizeof(ArgList) * ARRAY_LEN[(*arg)->argvIndex]);
@@ -63,7 +64,7 @@ bool pushArgList(ArgList *arg, String *val) {
   return true;
 }
 char **getArgFromArgList(ArgList *arg) {
-  char **val = malloc(sizeof(char *) * (arg->argv+1));
+  char **val = malloc(sizeof(char *) * (size_t)(arg->argv+1));
   for (int i = 0; i < arg->argv; i++) {
     val[i] = getCharArray(arg->argc[i]);
   }

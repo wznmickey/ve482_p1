@@ -82,7 +82,7 @@ String *copyString(String *st) {
   String *temp = malloc(sizeof(String));
   temp->len = st->len;
   temp->used = st->used;
-  temp->start = malloc(sizeof(char) * (st->len));
+  temp->start = malloc(sizeof(char) *(size_t) (st->len));
   temp->mallocStart = temp;
   strcpy(temp->start, st->start);
   return temp;
