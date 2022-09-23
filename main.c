@@ -1,3 +1,4 @@
+#include "String.h"
 #include "parse.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -29,11 +30,13 @@ int main() {
       printf("exit\n");
       return 0;
     }
-    arg[0] = input;
-    arg[1] = NULL;
+    String *inputS = initString(input);
+    command *command_us = malloc(sizeof(command));
+    parse(inputS, command_us);
+    char **usArg = getArgFromCommand(command_us);
     pid_t pid = fork();
     if (pid == 0) {
-      int status_code = execvp(input, arg);
+      int status_code = execvp(usArg[0], usArg);
       if (status_code == -1) {
         printf("Command wrong with error code %d.\n", status_code);
         return status_code;

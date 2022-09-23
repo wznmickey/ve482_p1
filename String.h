@@ -19,4 +19,5 @@ int changeString(String *st, char aim, char newOne);
 String *spiltString(String *st, char aim);
 int findString(String *st, char aim);
 String *copyString(String *st);
+char *getCharArray(String *st);
 #endif

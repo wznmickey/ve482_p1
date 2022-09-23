@@ -62,6 +62,18 @@ bool pushArgList(ArgList *arg, String *val) {
   arg->argv++;
   return true;
 }
+char **getArgFromArgList(ArgList *arg) {
+  char **val = malloc(sizeof(char *) * (arg->argv+1));
+  for (int i = 0; i < arg->argv; i++) {
+    val[i] = getCharArray(arg->argc[i]);
+  }
+  val[arg->argv]=NULL;
+  // printf("%d",(int)val[arg->argv]);
+  return val;
+}
+char **getArgFromCommand(command *output) {
+  return getArgFromArgList(output->args);
+}
 void parse(String *input, command *output) {
   if (output == NULL) {
     return;

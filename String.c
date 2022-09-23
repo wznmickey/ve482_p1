@@ -87,3 +87,4 @@ String *copyString(String *st) {
   strcpy(temp->start, st->start);
   return temp;
 }
+char *getCharArray(String *st) { return st->start; }

@@ -16,7 +16,6 @@ typedef struct command {
   struct command *before;
   struct command *after;
 } command;
-
-
-
+char **getArgFromCommand(command *output);
+void parse(String *input, command *output);
 #endif
