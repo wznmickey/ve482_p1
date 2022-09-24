@@ -7,18 +7,18 @@ typedef struct ArgList {
   int argvIndex; // index in ARRAY_LEN
 } ArgList;
 
-typedef struct command {
+typedef struct Command {
   String *mainCommand;
   ArgList *args;
   String *stdin;
   String *stdout;
   int argv;
-  struct command *before;
-  struct command *after;
-} command;
-char **getArgFromCommand(command *output);
-void parse(String *input, command *output);
-void initCommand(command * c);
+  struct Command *before;
+  struct Command *after;
+} Command;
+char **getArgFromCommand(Command *output);
+void parse(String *input, Command *output);
+void initCommand(Command *c);
 void deleteArgList(ArgList *arg);
-command *deleteFullCommandList(command *c);
+Command *deleteFullCommandList(Command *c);
 #endif

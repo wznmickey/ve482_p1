@@ -75,16 +75,16 @@ char **getArgFromArgList(ArgList *arg) {
   val[arg->argv] = NULL;
   return val;
 }
-char **getArgFromCommand(command *output) {
+char **getArgFromCommand(Command *output) {
   return getArgFromArgList(output->args);
 }
-void parse(String *input, command *output) {
+void parse(String *input, Command *output) {
   if (output == NULL) {
     return;
   }
-  command *temp = output->after;
+  Command *temp = output->after;
   while (temp != NULL) {
-    command *temp2 = temp->after;
+    Command *temp2 = temp->after;
     deleteString(temp->mainCommand);
     deleteArgList(temp->args);
     deleteString(temp->stdin);
@@ -111,7 +111,7 @@ void parse(String *input, command *output) {
     String *tempInputNew = spiltString(tempInput, ' ');
 
     emplaceArgList(output->args, tempInput);
-    
+
     tempInput = tempInputNew;
     if (tempInput == NULL) {
       break;
@@ -119,7 +119,7 @@ void parse(String *input, command *output) {
   }
   return;
 }
-void initCommand(command *c) {
+void initCommand(Command *c) {
   c->mainCommand = NULL;
   c->after = NULL;
   c->args = NULL;
@@ -128,7 +128,7 @@ void initCommand(command *c) {
   c->stdout = NULL;
   return;
 }
-command *deleteCommand(command *c) {
+Command *deleteCommand(Command *c) {
   if (c == NULL) {
     return c;
   }
@@ -139,7 +139,7 @@ command *deleteCommand(command *c) {
   free(c);
   return NULL;
 }
-command *deleteFullCommandList(command *c) {
+Command *deleteFullCommandList(Command *c) {
   if (c == NULL) {
     return c;
   }
