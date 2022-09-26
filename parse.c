@@ -34,10 +34,15 @@ void pureMoveArgList(ArgList *arg, ArgList *dst) {
   if (arg == NULL || dst == NULL) {
     return;
   }
+  dst->argv = arg->argv;
+  dst->argvIndex = arg->argvIndex;
+
   for (int i = 0; i < arg->argv; i++) {
     dst->argc[i] = arg->argc[i];
   }
-  free(arg);
+  free(arg->argc);
+  // free(arg);
+
   return;
 }
 
@@ -46,25 +51,29 @@ void extendArgList(ArgList **arg) {
     return;
   }
   if ((*arg)->argv >=
-      (int)ARRAY_LEN[(*arg)->argvIndex] / 2) // extend in advance
+      (int)ARRAY_LEN[(*arg)->argvIndex] / 2)  // extend in advance
   {
     (*arg)->argvIndex++;
-    ArgList *temp = malloc(sizeof(ArgList) * ARRAY_LEN[(*arg)->argvIndex]);
+    ArgList *temp = malloc(sizeof(ArgList));
+    String **tt = malloc(sizeof(String *) * ARRAY_LEN[(*arg)->argvIndex]);
+    temp->argc = tt;
     pureMoveArgList(*arg, temp);
-    free(*arg);
+    free(*arg);  // not sure
+
     *arg = temp;
   }
   return;
 }
 
-bool emplaceArgList(ArgList *arg, String *val) {
+bool emplaceArgList(ArgList **arg, String *val) {
   if (arg == NULL) {
     return false;
   }
-  extendArgList(&arg);
-  arg->argc[arg->argv] = copyString(val);
+
+  extendArgList(arg);
+  (*arg)->argc[(*arg)->argv] = copyString(val);
   deleteString(val);
-  arg->argv++;
+  (*arg)->argv++;
   return true;
 }
 char **getArgFromArgList(ArgList *arg) {
@@ -78,6 +87,11 @@ char **getArgFromArgList(ArgList *arg) {
 char **getArgFromCommand(Command *output) {
   return getArgFromArgList(output->args);
 }
+
+// void seperateCommand(String *input,Command *output)
+// {
+
+// }
 void parse(String *input, Command *output) {
   if (output == NULL) {
     return;
@@ -87,8 +101,6 @@ void parse(String *input, Command *output) {
     Command *temp2 = temp->after;
     deleteString(temp->mainCommand);
     deleteArgList(temp->args);
-    deleteString(temp->stdin);
-    deleteString(temp->stdout);
     free(temp);
     if (temp2 != NULL) {
       temp = temp2;
@@ -99,8 +111,7 @@ void parse(String *input, Command *output) {
   output->after = NULL;
   deleteArgList(output->args);
   deleteString(output->mainCommand);
-  deleteString(output->stdout);
-  deleteString(output->stdin);
+
   output->before = NULL;
   String *tempInput = input;
 
@@ -110,7 +121,7 @@ void parse(String *input, Command *output) {
   while (true) {
     String *tempInputNew = spiltString(tempInput, ' ');
 
-    emplaceArgList(output->args, tempInput);
+    emplaceArgList(&output->args, tempInput);
 
     tempInput = tempInputNew;
     if (tempInput == NULL) {
@@ -124,8 +135,8 @@ void initCommand(Command *c) {
   c->after = NULL;
   c->args = NULL;
   c->before = NULL;
-  c->stdin = NULL;
-  c->stdout = NULL;
+  c->inFile = 1;
+  c->outFile = 2;
   return;
 }
 Command *deleteCommand(Command *c) {
@@ -134,8 +145,6 @@ Command *deleteCommand(Command *c) {
   }
   deleteArgList(c->args);
   deleteString(c->mainCommand);
-  deleteString(c->stdin);
-  deleteString(c->stdout);
   free(c);
   return NULL;
 }

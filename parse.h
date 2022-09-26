@@ -10,8 +10,8 @@ typedef struct ArgList {
 typedef struct Command {
   String *mainCommand;
   ArgList *args;
-  String *stdin;
-  String *stdout;
+  int inFile;
+  int outFile;
   int argv;
   struct Command *before;
   struct Command *after;
