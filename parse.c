@@ -82,7 +82,8 @@ char **getArgFromArgList(ArgList *arg) {
   int toPush = 0;
 
   for (int i = 0; i < arg->argv; i++) {
-    if (strcmp(getCharArray(arg->argc[i]), "") == 0) continue; // remove empty args.
+    if (strcmp(getCharArray(arg->argc[i]), "") == 0)
+      continue;  // remove empty args.
 
     val[toPush] = getCharArray(arg->argc[i]);
     toPush++;
