@@ -78,10 +78,16 @@ bool emplaceArgList(ArgList **arg, String *val) {
 }
 char **getArgFromArgList(ArgList *arg) {
   char **val = malloc(sizeof(char *) * (size_t)(arg->argv + 1));
+
+  int toPush = 0;
+
   for (int i = 0; i < arg->argv; i++) {
-    val[i] = getCharArray(arg->argc[i]);
+    if (strcmp(getCharArray(arg->argc[i]), "") == 0) continue; // remove empty args.
+
+    val[toPush] = getCharArray(arg->argc[i]);
+    toPush++;
   }
-  val[arg->argv] = NULL;
+  val[toPush] = NULL;
   return val;
 }
 char **getArgFromCommand(Command *output) {
