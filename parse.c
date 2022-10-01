@@ -98,60 +98,74 @@ char **getArgFromCommand(Command *output) {
   return getArgFromArgList(output->args);
 }
 
+int getPlace(String *input, int before, int offset) {
+  for (int i = before + offset; i < input->len; i++) {
+    // todo: add ' and " test
+    switch ((input->start)[i]) {
+      case '>':
+        return i;
+      case '<':
+        return i;
+      case '|':
+        return i;
+    }
+  }
+  return -1;
+}
+
 StringList *seperateString(String *input) {
-
-  printf("message : %d %d %s ,%d,%d\n",input->len,input->used,input->start,(int)input->mallocStart,input);
-
+  // printf("message : %d %d %s ,%d,%d\n", input->len, input->used, input->start,
+  //        (int)input->mallocStart, input);
 
   String *sL[1025];  // less than 1024, 1 as buffer
   int sLNum = 0;
+  int lastPlace = 0;
+  int offset = 0;
   while (true) {
-    int place = findString(input, '>');
-    printf("times %d\n",place);
+    int place = getPlace(input, lastPlace, offset);
+
+    // printf("times %d\n", place);
     fflush(NULL);
     if (place == -1) {
       break;
     }
-
-    if ((place != 0) && (input->start[place + 1] == '>'))  // workwith >>
+    if ((place != 0) && (input->start[place + 1] == '>') &&
+        (input->start[place] == '>'))  // workwith >>
     {
-      String *temp = spiltStringByIndexLevel2(input, place - 1);
-      sL[sLNum] = input;
+      String *temp = copyFromIndex(input, lastPlace, place);
+      sL[sLNum] = temp;
       sLNum++;
-      input = temp;
-      printf("derffede");
+      offset = 2;
+      // printf("derffede");
       fflush(stdout);
+      lastPlace = place;
       continue;
     }
-    if (place != 0) {
-      String *temp = spiltStringByIndex(input, place - 1);
-      sL[sLNum] = input;
+    if ((place != 0))  // workwith other sign
+    {
+      String *temp = copyFromIndex(input, lastPlace, place);
+      sL[sLNum] = temp;
       sLNum++;
-      input = temp;
-
+      offset = 1;
+      // printf("derffede");
+      fflush(stdout);
+      lastPlace = place;
+      continue;
     } else {
-      place = findStringEscape(input, '>');
-        printf("times %d\n",place);
-    fflush(NULL);
-      if (place == -1) {
-        break;
-      }
-      // place can not be 0
-      String *temp = spiltStringByIndex(input, place - 1);
-      sL[sLNum] = input;
-
-      sLNum++;
-      input = temp;
+      printf("error");
+      fflush(NULL);
+      lastPlace = place;
     }
   }
-  sL[sLNum] = input;
-
+  String *temp = copyFromIndex(input, lastPlace, input->len + 1);
+  sL[sLNum] = temp;
   sLNum++;
   StringList *output = malloc(sizeof(StringList));
   output->length = sLNum;
   output->str = malloc(sizeof(String *) * (size_t)sLNum);
   for (int i = 0; i < sLNum; i++) {
     (output->str)[i] = sL[i];
+    // printf("index %d , %s\n", i, sL[i]->start);
   }
 
   return output;
@@ -191,7 +205,8 @@ void parse(String *input, Command *output) {
   output->after = NULL;
   output->inFile = 0;
   output->outFile = 1;
-  printf("parse %s with pointer %d  with before %d \n",input->start,(int) output,(int) output->before);
+  // printf("parse %s with pointer %d  with before %d \n", input->start,
+  //        (int)output, (int)output->before);
   fflush(NULL);
   String *tempInput = input;
 
@@ -205,7 +220,7 @@ void parse(String *input, Command *output) {
     }
     output->before->outFile =
         open(i, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    printf("open %s in %d\n", i,output->before->outFile);
+    // printf("open %s in %d\n", i, output->before->outFile);
     deleteString(tempInput);
     // free(tempInput);
     return;
@@ -219,11 +234,25 @@ void parse(String *input, Command *output) {
     }
     output->before->outFile =
         open(i, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
-    printf("open %s in %d\n", i,output->before->outFile);
+    // printf("open %s in %d\n", i, output->before->outFile);
     deleteString(tempInput);
     // free(tempInput);
     return;
   }
+
+  if ((tempInput->start)[0] == '<')  // <
+  {
+    char *i;
+    for (i = (tempInput->start) + 1;; i++) {
+      if ((*i) != ' ') break;
+    }
+    output->before->inFile = open(i, O_RDWR , S_IRUSR | S_IWUSR);
+    // printf("open %s in %d\n", i, output->before->inFile);
+    deleteString(tempInput);
+    // free(tempInput);
+    return;
+  }
+
   output->args = malloc(sizeof(ArgList));
   initArgList(output->args);
   output->mainCommand = copyString(input);

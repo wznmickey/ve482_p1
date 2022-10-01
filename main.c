@@ -39,6 +39,7 @@ int main() {
     // Command *command = malloc(sizeof(Command));
     // initCommand(command);
     StringList *stringList = seperateString(inputS);
+    deleteString(inputS);
     // printf("2\n");
 
     fflush(stdout);
@@ -52,7 +53,7 @@ int main() {
           lastCommand->after = tempCommand;
         } else {
           firstCommand = tempCommand;
-          firstCommand->before=NULL;
+          firstCommand->before = NULL;
         }
         lastCommand = tempCommand;
         parse(stringList->str[i], tempCommand);
@@ -63,12 +64,12 @@ int main() {
     fflush(stdout);
     while (firstCommand != NULL) {
       fflush(NULL);
-      printf("1111\n");
+      // printf("1111\n");
       fflush(NULL);
 
       Command *command = firstCommand;
-      unsigned long long int temp = command;
-      printf("use command %lld", temp);
+      // unsigned long long int temp = command;
+      // printf("use command %lld", temp);
       firstCommand = firstCommand->after;
       if (command->isValid == false) {
         free(command);
@@ -86,7 +87,7 @@ int main() {
       int stdin_ = 0;
       int stdout_ = 1;
 
-      printf("in %d out %d\n", command->inFile, command->outFile);
+      // printf("in %d out %d\n", command->inFile, command->outFile);
       fflush(NULL);
       if (command->inFile != 0) {
         stdin_ = dup(0);

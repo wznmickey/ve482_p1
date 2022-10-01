@@ -22,12 +22,17 @@ typedef struct StringList {
   int length;
 } StringList;
 
+enum token {
+  SINGLELEFT,
+  DOUBLELEFT,
+  SINGLERIGHT,
+};
 
 char **getArgFromCommand(Command *output);
 void parse(String *input, Command *output);
 void initCommand(Command *c);
 void deleteArgList(ArgList *arg);
 Command *deleteFullCommandList(Command *c);
-StringList *seperateString(String *input) ;
+StringList *seperateString(String *input);
 void deleteStringList(StringList *list);
 #endif

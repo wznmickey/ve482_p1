@@ -15,7 +15,7 @@ String *initString(char input[]) {
   val->rawStatus = malloc(sizeof(int) * strlen(input) + 5);
 
   for (int i = 0; i < (int)strlen(input); i++) {
-    (val->rawStatus)[i] = 0;
+    (val->rawStatus)[i] = -1;
   }
   (val->rawStatus)[(int)strlen(input)] = '\0';  // for copy
   // reserve for future develop
@@ -83,14 +83,14 @@ String *deleteString(String *val) {
   return NULL;
 }
 int findString(String *st, char aim) {
-  printf("length : %d\n",st->len);
+  // printf("length : %d\n", st->len);
   fflush(NULL);
   for (int i = 0; i < st->len; i++) {
     if (st->start[i] == aim) {
-      printf("here \n");
+      // printf("here \n");
       fflush(NULL);
-      // if (st->rawStatus[i] == 0) {
-        return i;
+      // if (st->rawStatus[i] == -1) {
+      return i;
       // }
     }
   }
@@ -99,10 +99,10 @@ int findString(String *st, char aim) {
 int findStringEscape(String *st, char aim) {
   for (int i = 1; i < st->len; i++) {
     if (st->start[i] == aim) {
-       printf("here \n");
+      // printf("here \n");
       fflush(NULL);
-      // if (st->rawStatus[i] == 0) {
-        return i;
+      // if (st->rawStatus[i] == -1) {
+      return i;
       // }
     }
   }
@@ -148,7 +148,6 @@ String *spiltStringByIndex(String *st, int find) {
       1;  // It is meaningless. Just to init. The value will not be updated.
   val->rawStatus = st->rawStatus + find + 1;
 
-
   String *ans = copyString(val);
   free(val);
   st->start[find + 1] = '\0';
@@ -174,6 +173,23 @@ String *spiltStringByIndexLevel2(String *st, int find) {
   return ans;
 }
 
+// include left, not include right
+String *copyFromIndex(String *st, int placeLeft, int placeRight) {
+  String *temp = malloc(sizeof(String));
+  temp->len = placeRight - placeLeft;
+  temp->start = malloc(sizeof(char) * (size_t)((temp->len) + 1));
+  temp->mallocStart = temp;
+  temp->used = 1;
+  temp->rawStatus = malloc(sizeof(int) * (size_t)(temp->len + 1));
+  for (int i = 0; i < temp->len; i++) {
+    (temp->start)[i] = (st->start)[i + placeLeft];
+    (temp->rawStatus)[i] = (st->rawStatus)[i + placeLeft];
+  }
+  (temp->start)[temp->len] = '\0';
+  (temp->rawStatus)[temp->len] = '\0';
+  // printf("%d,%d,copy place %s \n",placeLeft,placeRight, (st->start));
+  return temp;
+}
 
 String *copyString(String *st) {
   String *temp = malloc(sizeof(String));

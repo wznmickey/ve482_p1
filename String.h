@@ -27,4 +27,5 @@ char *getCharArray(String *st);
 String *spiltStringByIndex(String *st, int find);
 int findStringEscape(String *st, char aim);
 String *spiltStringByIndexLevel2(String *st, int find) ;
+String *copyFromIndex(String *st, int placeLeft, int placeRight);
 #endif
