@@ -29,7 +29,7 @@ enum token {
 };
 
 char **getArgFromCommand(Command *output);
-void parse(String *input, Command *output);
+void parse(String *input, Command *output, int *tempInFile, int *tempOutFile);
 void initCommand(Command *c);
 void deleteArgList(ArgList *arg);
 Command *deleteFullCommandList(Command *c);

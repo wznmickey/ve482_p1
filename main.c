@@ -46,17 +46,24 @@ int main() {
     Command *firstCommand = NULL;
     {
       Command *lastCommand = NULL;
+      Command *tempCommand = malloc(sizeof(Command));
+      tempCommand->isValid = false;
+      int tempInFile = -1;
+      int tempOutFile = -1;
       for (int i = 0; i < stringList->length; i++) {
-        Command *tempCommand = malloc(sizeof(Command));
-        if (lastCommand != NULL) {
-          tempCommand->before = lastCommand;
-          lastCommand->after = tempCommand;
-        } else {
+        if (tempCommand->isValid) {
+          tempCommand = malloc(sizeof(Command));
+          if (lastCommand != NULL) {
+            tempCommand->before = lastCommand;
+            lastCommand->after = tempCommand;
+          }
+        }
+        if (lastCommand == NULL) {
           firstCommand = tempCommand;
           firstCommand->before = NULL;
         }
         lastCommand = tempCommand;
-        parse(stringList->str[i], tempCommand);
+        parse(stringList->str[i], tempCommand, &tempInFile, &tempOutFile);
       }
     }
     // printf("3\n");
