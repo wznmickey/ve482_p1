@@ -7,6 +7,9 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 const size_t ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 void initArgList(ArgList *arg) {
   if (arg == NULL) {
@@ -95,46 +98,146 @@ char **getArgFromCommand(Command *output) {
   return getArgFromArgList(output->args);
 }
 
-// void seperateCommand(String *input,Command *output)
-// {
+StringList *seperateString(String *input) {
 
-// }
+  printf("message : %d %d %s ,%d,%d\n",input->len,input->used,input->start,(int)input->mallocStart,input);
+
+
+  String *sL[1025];  // less than 1024, 1 as buffer
+  int sLNum = 0;
+  while (true) {
+    int place = findString(input, '>');
+    printf("times %d\n",place);
+    fflush(NULL);
+    if (place == -1) {
+      break;
+    }
+
+    if ((place != 0) && (input->start[place + 1] == '>'))  // workwith >>
+    {
+      String *temp = spiltStringByIndexLevel2(input, place - 1);
+      sL[sLNum] = input;
+      sLNum++;
+      input = temp;
+      printf("derffede");
+      fflush(stdout);
+      continue;
+    }
+    if (place != 0) {
+      String *temp = spiltStringByIndex(input, place - 1);
+      sL[sLNum] = input;
+      sLNum++;
+      input = temp;
+
+    } else {
+      place = findStringEscape(input, '>');
+        printf("times %d\n",place);
+    fflush(NULL);
+      if (place == -1) {
+        break;
+      }
+      // place can not be 0
+      String *temp = spiltStringByIndex(input, place - 1);
+      sL[sLNum] = input;
+
+      sLNum++;
+      input = temp;
+    }
+  }
+  sL[sLNum] = input;
+
+  sLNum++;
+  StringList *output = malloc(sizeof(StringList));
+  output->length = sLNum;
+  output->str = malloc(sizeof(String *) * (size_t)sLNum);
+  for (int i = 0; i < sLNum; i++) {
+    (output->str)[i] = sL[i];
+  }
+
+  return output;
+}
+
+void deleteStringList(StringList *list) {
+  // for (int i = 0; i < list->length; i++) {
+  //   deleteString((list->str)[i]);
+  // }
+  free(list->str);
+  free(list);
+  return;
+}
+
 void parse(String *input, Command *output) {
   if (output == NULL) {
     return;
   }
-  Command *temp = output->after;
-  while (temp != NULL) {
-    Command *temp2 = temp->after;
-    deleteString(temp->mainCommand);
-    deleteArgList(temp->args);
-    free(temp);
-    if (temp2 != NULL) {
-      temp = temp2;
-    } else {
-      break;
-    }
-  }
-  output->after = NULL;
-  deleteArgList(output->args);
-  deleteString(output->mainCommand);
+  // Command *temp = output->after;
+  // while (temp != NULL) {
+  //   Command *temp2 = temp->after;
+  //   deleteString(temp->mainCommand);
+  //   deleteArgList(temp->args);
+  //   free(temp);
+  //   if (temp2 != NULL) {
+  //     temp = temp2;
+  //   } else {
+  //     break;
+  //   }
+  // }
+  // output->after = NULL;
+  // deleteArgList(output->args);
+  // deleteString(output->mainCommand);
 
-  output->before = NULL;
+  // output->before = NULL;
+  output->isValid = false;
+  output->after = NULL;
+  output->inFile = 0;
+  output->outFile = 1;
+  printf("parse %s with pointer %d  with before %d \n",input->start,(int) output,(int) output->before);
+  fflush(NULL);
   String *tempInput = input;
 
+  // printf("now command %s \n", (tempInput->start));
+
+  if (((tempInput->start)[0] == '>') && ((tempInput->start)[1] == '>'))  // >>
+  {
+    char *i;
+    for (i = (tempInput->start) + 2;; i++) {
+      if ((*i) != ' ') break;
+    }
+    output->before->outFile =
+        open(i, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    printf("open %s in %d\n", i,output->before->outFile);
+    deleteString(tempInput);
+    // free(tempInput);
+    return;
+  }
+
+  if ((tempInput->start)[0] == '>')  // >
+  {
+    char *i;
+    for (i = (tempInput->start) + 1;; i++) {
+      if ((*i) != ' ') break;
+    }
+    output->before->outFile =
+        open(i, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    printf("open %s in %d\n", i,output->before->outFile);
+    deleteString(tempInput);
+    // free(tempInput);
+    return;
+  }
   output->args = malloc(sizeof(ArgList));
   initArgList(output->args);
+  output->mainCommand = copyString(input);
+  // printf("part: %s \n", (tempInput->start));
 
   while (true) {
     String *tempInputNew = spiltString(tempInput, ' ');
-
     emplaceArgList(&output->args, tempInput);
-
     tempInput = tempInputNew;
     if (tempInput == NULL) {
       break;
     }
   }
+  output->isValid = true;
   return;
 }
 void initCommand(Command *c) {
@@ -159,7 +262,7 @@ Command *deleteFullCommandList(Command *c) {
   if (c == NULL) {
     return c;
   }
-  deleteFullCommandList(c->after);
+  // deleteFullCommandList(c->after);
   deleteCommand(c);
   return NULL;
 }

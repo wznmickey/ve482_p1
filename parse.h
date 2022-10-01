@@ -4,7 +4,7 @@
 typedef struct ArgList {
   String **argc;
   int argv;
-  int argvIndex; // index in ARRAY_LEN
+  int argvIndex;  // index in ARRAY_LEN
 } ArgList;
 
 typedef struct Command {
@@ -12,13 +12,22 @@ typedef struct Command {
   ArgList *args;
   int inFile;
   int outFile;
-  int argv;
   struct Command *before;
   struct Command *after;
+  bool isValid;
 } Command;
+
+typedef struct StringList {
+  String **str;
+  int length;
+} StringList;
+
+
 char **getArgFromCommand(Command *output);
 void parse(String *input, Command *output);
 void initCommand(Command *c);
 void deleteArgList(ArgList *arg);
 Command *deleteFullCommandList(Command *c);
+StringList *seperateString(String *input) ;
+void deleteStringList(StringList *list);
 #endif
