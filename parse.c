@@ -114,7 +114,8 @@ int getPlace(String *input, int before, int offset) {
 }
 
 StringList *seperateString(String *input) {
-  // printf("message : %d %d %s ,%d,%d\n", input->len, input->used, input->start,
+  // printf("message : %d %d %s ,%d,%d\n", input->len, input->used,
+  // input->start,
   //        (int)input->mallocStart, input);
 
   String *sL[1025];  // less than 1024, 1 as buffer
@@ -246,7 +247,7 @@ void parse(String *input, Command *output) {
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
     }
-    output->before->inFile = open(i, O_RDWR , S_IRUSR | S_IWUSR);
+    output->before->inFile = open(i, O_RDWR, S_IRUSR | S_IWUSR);
     // printf("open %s in %d\n", i, output->before->inFile);
     deleteString(tempInput);
     // free(tempInput);
