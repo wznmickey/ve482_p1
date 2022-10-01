@@ -181,7 +181,7 @@ void deleteStringList(StringList *list) {
   return;
 }
 
-void parse(String *input, Command *output) {
+void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
   if (output == NULL) {
     return;
   }
@@ -204,8 +204,16 @@ void parse(String *input, Command *output) {
   // output->before = NULL;
   output->isValid = false;
   output->after = NULL;
-  output->inFile = 0;
-  output->outFile = 1;
+  if (*tempInFile >= 0) {
+    output->inFile = *tempInFile;
+  } else {
+    output->inFile = 0;
+  }
+  if (*tempOutFile >= 0) {
+    output->outFile = *tempOutFile;
+  } else {
+    output->outFile = 1;
+  }
   // printf("parse %s with pointer %d  with before %d \n", input->start,
   //        (int)output, (int)output->before);
   fflush(NULL);
@@ -219,8 +227,13 @@ void parse(String *input, Command *output) {
     for (i = (tempInput->start) + 2;; i++) {
       if ((*i) != ' ') break;
     }
-    output->before->outFile =
-        open(i, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int temp = open(i, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if ((output->before != NULL) && (output->before->isValid)) {
+      output->before->outFile = temp;
+    } else {
+      *tempOutFile = temp;
+    }
+
     // printf("open %s in %d\n", i, output->before->outFile);
     deleteString(tempInput);
     // free(tempInput);
@@ -233,8 +246,12 @@ void parse(String *input, Command *output) {
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
     }
-    output->before->outFile =
-        open(i, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    int temp = open(i, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    if ((output->before != NULL) && (output->before->isValid)) {
+      output->before->outFile = temp;
+    } else {
+      *tempOutFile = temp;
+    }
     // printf("open %s in %d\n", i, output->before->outFile);
     deleteString(tempInput);
     // free(tempInput);
@@ -247,7 +264,14 @@ void parse(String *input, Command *output) {
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
     }
-    output->before->inFile = open(i, O_RDWR, S_IRUSR | S_IWUSR);
+
+    int temp = open(i, O_RDWR, S_IRUSR | S_IWUSR);
+    if ((output->before != NULL) && (output->before->isValid)) {
+      output->before->inFile = temp;
+    } else {
+      *tempInFile = temp;
+    }
+
     // printf("open %s in %d\n", i, output->before->inFile);
     deleteString(tempInput);
     // free(tempInput);
