@@ -63,7 +63,7 @@ int main() {
           firstCommand->before = NULL;
         }
         lastCommand = tempCommand;
-        parse(stringList->str[i], tempCommand, &tempInFile, &tempOutFile);
+        parse(stringList->str[i], tempCommand,&tempInFile,&tempOutFile);
       }
     }
     // printf("3\n");
