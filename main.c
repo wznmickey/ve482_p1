@@ -28,8 +28,12 @@ int main() {
     fflush(NULL);
     memset(input, 0, sizeof(char) * 2048);
     fgets(input, 2048 - 1, stdin);
+    if (strlen(input) == 0) {
+      goto EXIT;
+    }
     input[strlen(input) - 1] = '\0';  // remove the \n at the end.
     if (strcmp(input, "exit") == 0) {
+    EXIT:
       printf("exit\n");
       return 0;
     }
