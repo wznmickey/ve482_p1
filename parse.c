@@ -113,6 +113,35 @@ int getPlace(String *input, int before, int offset) {
   return -1;
 }
 
+StringList *dividesByPipe(String *st) {
+  String *sL[1025];  // less than 1024, 1 as buffer
+  int sLNum = 0;
+  while (true) {
+    // printf("we have %s \n", st->start);
+    String *temp = spiltString(st, '|');
+    sL[sLNum] = st;
+    sLNum++;
+    if (temp == NULL) {
+      // sL[sLNum] = st;
+      // sLNum++;
+      break;
+    }
+    st = temp;
+  }
+  // if (st != NULL) {
+  //   sL[sLNum] = st;
+  //   sLNum++;
+  // }
+  StringList *output = malloc(sizeof(StringList));
+  output->length = sLNum;
+  output->str = malloc(sizeof(String *) * (size_t)sLNum);
+  for (int i = 0; i < sLNum; i++) {
+    (output->str)[i] = sL[i];
+    // printf("index %d , %s\n", i, sL[i]->start);
+  }
+  return output;
+}
+
 StringList *seperateString(String *input) {
   // printf("message : %d %d %s ,%d,%d\n", input->len, input->used,
   // input->start,

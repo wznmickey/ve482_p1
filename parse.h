@@ -22,6 +22,11 @@ typedef struct StringList {
   int length;
 } StringList;
 
+typedef struct CommandList {
+  Command **lst;
+  int length;
+} CommandList;
+
 enum token {
   SINGLELEFT,
   DOUBLELEFT,
@@ -35,4 +40,5 @@ void deleteArgList(ArgList *arg);
 Command *deleteFullCommandList(Command *c);
 StringList *seperateString(String *input);
 void deleteStringList(StringList *list);
+StringList *dividesByPipe(String *st);
 #endif
