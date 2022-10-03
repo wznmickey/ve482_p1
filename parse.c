@@ -106,8 +106,8 @@ int getPlace(String *input, int before, int offset) {
         return i;
       case '<':
         return i;
-      case '|':
-        return i;
+        // case '|':
+        //   return i;
     }
   }
   return -1;
@@ -130,36 +130,50 @@ StringList *seperateString(String *input) {
     if (place == -1) {
       break;
     }
-    if ((place != 0) && (input->start[place + 1] == '>') &&
+    if ((input->start[place + 1] == '>') &&
         (input->start[place] == '>'))  // workwith >>
     {
-      String *temp = copyFromIndex(input, lastPlace, place);
-      sL[sLNum] = temp;
+      int end = findStringEscape(input, ' ', place + 2);
+      if (end == -1) {
+        end = input->len;
+      }
+      twoString sp = getString(input, place, end);
+      // String *temp = copyFromIndex(input, lastPlace, place);
+      sL[sLNum] = (sp.st2);
       sLNum++;
-      offset = 2;
+      offset = 0;
+      input = sp.st1;
       // printf("derffede");
       fflush(stdout);
-      lastPlace = place;
+      lastPlace = 0;
       continue;
     }
-    if ((place != 0))  // workwith other sign
+    if (((input->start[place] == '>') ||
+         (input->start[place] == '<')))  // workwith < and >
     {
-      String *temp = copyFromIndex(input, lastPlace, place);
-      sL[sLNum] = temp;
+      int end = findStringEscape(input, ' ', place + 1);
+      if (end == -1) {
+        end = input->len;
+      }
+      twoString sp = getString(input, place, end);
+      // String *temp = copyFromIndex(input, lastPlace, place);
+      sL[sLNum] = (sp.st2);
       sLNum++;
-      offset = 1;
+      offset = 0;
+      input = sp.st1;
       // printf("derffede");
       fflush(stdout);
-      lastPlace = place;
+      lastPlace = 0;
       continue;
     } else {
       printf("error");
       fflush(NULL);
-      lastPlace = place;
+      lastPlace = 0;
+      break;
     }
   }
-  String *temp = copyFromIndex(input, lastPlace, input->len + 1);
-  sL[sLNum] = temp;
+  // String *temp = copyFromIndex(input, lastPlace, input->len + 1);
+  sL[sLNum] = input;
   sLNum++;
   StringList *output = malloc(sizeof(StringList));
   output->length = sLNum;

@@ -39,7 +39,7 @@ int main() {
     // Command *command = malloc(sizeof(Command));
     // initCommand(command);
     StringList *stringList = seperateString(inputS);
-    deleteString(inputS);
+    // deleteString(inputS);
     // printf("2\n");
 
     fflush(stdout);

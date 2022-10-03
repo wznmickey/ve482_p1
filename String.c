@@ -1,6 +1,7 @@
 
 #include "String.h"
 #include <alloca.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,11 +85,11 @@ String *deleteString(String *val) {
 }
 int findString(String *st, char aim) {
   // printf("length : %d\n", st->len);
-  fflush(NULL);
+  // fflush(NULL);
   for (int i = 0; i < st->len; i++) {
     if (st->start[i] == aim) {
       // printf("here \n");
-      fflush(NULL);
+      // fflush(NULL);
       // if (st->rawStatus[i] == -1) {
       return i;
       // }
@@ -96,11 +97,17 @@ int findString(String *st, char aim) {
   }
   return -1;  // Not found
 }
-int findStringEscape(String *st, char aim) {
-  for (int i = 1; i < st->len; i++) {
-    if (st->start[i] == aim) {
+int findStringEscape(String *st, char aim, int offset) {
+  int index = offset;
+  for (; index < st->len; index++) {
+    if ((st->start)[index] != ' ') {
+      break;
+    }
+  }
+  for (int i = index; i < st->len; i++) {
+    if ((st->start[i] == aim) || (st->start[i] == '>') || (st->start[i] == '<')) {
       // printf("here \n");
-      fflush(NULL);
+      // fflush(NULL);
       // if (st->rawStatus[i] == -1) {
       return i;
       // }
@@ -201,7 +208,60 @@ String *copyString(String *st) {
   strcpy(temp->start, st->start);
   temp->rawStatus =
       malloc(sizeof(int) * (size_t)(st->len + 1));  // 1 more for '\0'
-  strcpy((char *)temp->rawStatus, (char *)st->rawStatus);
+  for (int i=0;i<temp->len;i++)
+  {
+    temp->rawStatus[i] = st->rawStatus[i];
+  }
   return temp;
 }
 char *getCharArray(String *st) { return st->start; }
+twoString getString(String *st, int placeLeft, int placeRight) {
+  int getLen = placeRight - placeLeft;
+  int getRemain = st->len - getLen;
+  // printf("%d %d \n", getLen, getRemain);
+  fflush(NULL);
+  String *remain = malloc(sizeof(String));
+  String *get = malloc(sizeof(String));
+
+  remain->start = malloc(sizeof(char) * (size_t)(getRemain + 1));
+  get->start = malloc(sizeof(char) * (size_t)(getLen + 1));
+
+  remain->rawStatus = malloc(sizeof(int) * (size_t)(getRemain + 1));
+  get->rawStatus = malloc(sizeof(int) * (size_t)(getLen + 1));
+
+  remain->mallocStart = remain;
+  get->mallocStart = get;
+
+  remain->used = 1;
+  get->used = 1;
+
+  twoString ans;
+  ans.st1 = remain;
+  ans.st2 = get;
+  int toGetI = 0;
+  int remainI = 0;
+  for (int i = 0; i < st->len; i++) {
+    // printf("%d %d \n", toGetI, remainI);
+    if ((i >= placeLeft) && (i < placeRight)) {
+      (get->start)[toGetI] = (st->start)[i];
+      (get->rawStatus)[toGetI] = (st->rawStatus)[i];
+      toGetI++;
+    } else {
+      (remain->start)[remainI] = (st->start)[i];
+      (remain->rawStatus)[remainI] = (st->rawStatus)[i];
+      remainI++;
+    }
+  }
+  (get->start)[toGetI] = '\0';
+  (remain->start)[remainI] = '\0';
+  // printf("    %d %d \n", toGetI, remainI);
+
+  get->len = (int)strlen(get->start);
+  // printf("    %d %d \n", toGetI, remainI);
+
+  remain->len = (int)strlen(remain->start);
+  // printf("    %d %d \n", toGetI, remainI);
+
+  deleteString(st);
+  return ans;
+}
