@@ -237,6 +237,7 @@ int main() {
             deleteFullCommandList(command);
             free(usArg);
             fflush(NULL);
+            free(commandList.lst);
             return 0;
           } else {
             int status_code = execvp(usArg[0], usArg);
@@ -244,10 +245,14 @@ int main() {
 
             if (status_code == -1) {
               printf("Command wrong with error code %d.\n", status_code);
+
               deleteFullCommandList(command);
 
               free(usArg);
-              fflush(NULL);
+              // fflush(NULL);
+              free(commandList.lst);
+              // free(commandList.lst);
+
               return 0;
             }
           }
