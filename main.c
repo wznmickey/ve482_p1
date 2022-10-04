@@ -9,8 +9,8 @@
 #include "String.h"
 #include "parse.h"
 void flush() {
-  fflush(stdin);
-  fflush(stdout);
+  fflush(NULL);
+  fflush(NULL);
   return;
 }
 #define printf(...)    \
@@ -20,26 +20,39 @@ void flush() {
   flush();            \
   fgets(__VA_ARGS__); \
   flush();
+char input[2048];
+void SIGINTReaction() {
+  if (strlen(input) == 0) printf("mumsh $ ");
+  return;
+}
 
 int main() {
-  char input[2048];
+  signal(SIGQUIT, SIG_IGN);
+  signal(SIGINT, SIGINTReaction);
+  signal(SIGTSTP, SIG_IGN);
+  signal(SIGTTIN, SIG_IGN);
+  signal(SIGTTOU, SIG_IGN);
+  signal(SIGCHLD, SIG_IGN);
+  setpgid(getpid(), getpid());
+  tcsetpgrp(STDOUT_FILENO, getpid());
+  tcsetpgrp(STDIN_FILENO, getpid());
+
   while (true) {
   RESTART:
     fflush(NULL);
+    fflush(stdin);
+    fflush(stdout);
     printf("mumsh $ ");
+    fflush(stdin);
+    fflush(stdout);
     fflush(NULL);
     // AGAIN:
     memset(input, 0, sizeof(char) * 2048);
-    char ch;
-    int tempIndex = 0;
-    while ((ch = (char)getchar()) != EOF) {
-      // printf("\n %d \n",(int)ch);
-      input[tempIndex] = ch;
-      tempIndex++;
-      if (ch == '\n') {
-        break;
-      }
-    }
+    // char ch;
+    // int tempIndex = 0;
+    fgets(input, 2048 - 1, stdin);
+    fflush(stdin);
+    fflush(stdout);
     if (strlen(input) == 0) {
       printf("exit\n");
       return 0;
@@ -227,6 +240,12 @@ int main() {
         fflush(NULL);
 
         if (pid == 0) {
+          signal(SIGINT, SIG_DFL);
+          signal(SIGQUIT, SIG_DFL);
+          signal(SIGTSTP, SIG_DFL);
+          signal(SIGTTIN, SIG_DFL);
+          signal(SIGTTOU, SIG_DFL);
+          signal(SIGCHLD, SIG_DFL);
           fflush(NULL);
           if (strcmp(usArg[0], "pwd") == 0) {
             char *pwdPath = NULL;
@@ -245,14 +264,11 @@ int main() {
 
             if (status_code == -1) {
               printf("Command wrong with error code %d.\n", status_code);
-
               deleteFullCommandList(command);
-
               free(usArg);
               // fflush(NULL);
               free(commandList.lst);
               // free(commandList.lst);
-
               return 0;
             }
           }
@@ -289,7 +305,9 @@ int main() {
     // }
     // for (int i = 0; i < piped->length; i++) {
     for (int i = 0; i < piped->length; i++) {
-      if (pidList[i] != -1) waitpid(pidList[i], NULL, 0);
+      if (pidList[i] != -1) {
+        waitpid(pidList[i], NULL, 0);
+      }
     }
     free(piped->str);
     free(piped);
