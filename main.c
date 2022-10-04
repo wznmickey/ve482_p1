@@ -24,6 +24,7 @@ void flush() {
 int main() {
   char input[2048];
   while (true) {
+  RESTART:
     fflush(NULL);
     printf("mumsh $ ");
     fflush(NULL);
@@ -49,6 +50,9 @@ int main() {
       printf("exit\n");
       fflush(NULL);
       return 0;
+    }
+    if (strlen(input) == 0) {
+      goto RESTART;
     }
     // printf("1\n");
 
@@ -127,12 +131,13 @@ int main() {
         }
         char **usArg = getArgFromCommand(command);
 
-        for (int i = 0; i < 1000; i++) {
-          if (usArg[i] == NULL) break;
+        // for (int i = 0; i < 1000; i++) {
+        //   if (usArg[i] == NULL) break;
 
-          // printf(" arg %s \n",usArg[i]);
-        }
-
+        //   // printf(" arg %s \n",usArg[i]);
+        // }
+        // int x = (strcmp(usArg[0], "cd"));
+        // printf("%s\n",usArg[0]);
         if (strcmp(usArg[0], "cd") == 0) {
           pidList[i] = -1;
           char *aim;
