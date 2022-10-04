@@ -257,19 +257,20 @@ int main() {
             free(usArg);
             fflush(NULL);
             free(commandList.lst);
-            return 0;
-          } else {
+            exit (0);
+          } else 
+          {
             int status_code = execvp(usArg[0], usArg);
             fflush(NULL);
 
             if (status_code == -1) {
               printf("Command wrong with error code %d.\n", status_code);
-              deleteFullCommandList(command);
-              free(usArg);
+              // deleteFullCommandList(command);
+              // free(usArg);
               // fflush(NULL);
-              free(commandList.lst);
               // free(commandList.lst);
-              return 0;
+              // free(commandList.lst);
+              exit(0);
             }
           }
           fflush(NULL);
