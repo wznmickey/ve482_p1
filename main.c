@@ -17,6 +17,7 @@ void flush() {
   printf(__VA_ARGS__); \
   flush();
 #define fgets(...)    \
+  flush();            \
   fgets(__VA_ARGS__); \
   flush();
 
@@ -26,15 +27,27 @@ int main() {
     fflush(NULL);
     printf("mumsh $ ");
     fflush(NULL);
+    // AGAIN:
     memset(input, 0, sizeof(char) * 2048);
-    fgets(input, 2048 - 1, stdin);
+    char ch;
+    int tempIndex = 0;
+    while ((ch = (char)getchar()) != EOF) {
+      // printf("\n %d \n",(int)ch);
+      input[tempIndex] = ch;
+      tempIndex++;
+      if (ch == '\n') {
+        break;
+      }
+    }
     if (strlen(input) == 0) {
-      goto EXIT;
+      printf("exit\n");
+      return 0;
     }
     input[strlen(input) - 1] = '\0';  // remove the \n at the end.
     if (strcmp(input, "exit") == 0) {
-    EXIT:
+      // EXIT:
       printf("exit\n");
+      fflush(NULL);
       return 0;
     }
     // printf("1\n");
@@ -120,6 +133,76 @@ int main() {
           // printf(" arg %s \n",usArg[i]);
         }
 
+        if (strcmp(usArg[0], "cd") == 0) {
+          pidList[i] = -1;
+          char *aim;
+          if (usArg[1] == NULL) {
+            // no argument, directly go to home page
+            char *login = getlogin();
+            if (strcmp(login, "root") == 0) {
+              char aim[] = "/root";
+              // free(login);
+              chdir(aim);
+              goto Parent;
+
+            } else {
+              char homePath[6 + 1 +
+                            strlen(login)];  // man useradd can allow name of
+                                             // maximum of 32 chars.
+              homePath[0] = '/';
+              homePath[1] = 'h';
+              homePath[2] = 'o';
+              homePath[3] = 'm';
+              homePath[4] = 'e';
+              homePath[5] = '/';
+              for (int i = 0; i < (int)strlen(login); i++) {
+                homePath[6 + i] = login[i];
+              }
+              homePath[strlen(login) + 6] = '\0';
+              // strcat(login, homePath);
+              // printf("%s \n",homePath);
+              fflush(NULL);
+              chdir(homePath);
+              fflush(NULL);
+              // free(login);
+              goto Parent;
+            }
+            // char aim[] = "";
+            // chdir(aim);
+            // goto Parent;
+          }
+          if (usArg[1] != NULL && usArg[2] != NULL)  // to many arguments
+          {
+            goto Parent;
+          }
+          if ((usArg[1][0] != '/')
+              // && ((usArg[1][0] != '~'))
+              )  // relative path
+          {
+            aim = malloc(sizeof(char) * (2 + 1 + strlen(usArg[1])));
+            aim[0] = '.';
+            aim[1] = '/';
+            for (int i = 0; i < (int)strlen(usArg[1]); i++) {
+              aim[i + 2] = usArg[1][i];
+            }
+            aim[2 + strlen(usArg[1])] = '\0';
+          } else {
+            aim = malloc(sizeof(char) * (1 + strlen(usArg[1])));
+            for (int i = 0; i < (int)strlen(usArg[1]); i++) {
+              aim[i] = usArg[1][i];
+            }
+            aim[strlen(usArg[1])] = '\0';
+          }
+          chdir(aim);
+          free(aim);
+          fflush(NULL);
+          // deleteFullCommandList(command);
+
+          // free(usArg);
+          fflush(NULL);
+          goto Parent;
+        }
+
         pid_t pid = fork();
         int stdin_ = 0;
         int stdout_ = 1;
@@ -140,21 +223,35 @@ int main() {
 
         if (pid == 0) {
           fflush(NULL);
-          int status_code = execvp(usArg[0], usArg);
-          fflush(NULL);
-
-          if (status_code == -1) {
-            printf("Command wrong with error code %d.\n", status_code);
+          if (strcmp(usArg[0], "pwd") == 0) {
+            char *pwdPath = NULL;
+            pwdPath = getcwd(NULL, 0);
+            printf("%s\n", pwdPath);
+            fflush(NULL);
+            free(pwdPath);
             deleteFullCommandList(command);
-
             free(usArg);
             fflush(NULL);
             return 0;
+          } else {
+            int status_code = execvp(usArg[0], usArg);
+            fflush(NULL);
+
+            if (status_code == -1) {
+              printf("Command wrong with error code %d.\n", status_code);
+              deleteFullCommandList(command);
+
+              free(usArg);
+              fflush(NULL);
+              return 0;
+            }
           }
           fflush(NULL);
           return 0;
         } else {
           pidList[i] = pid;
+
+        Parent:
           fflush(NULL);
           // waitpid(pid, NULL, 0);
           fflush(NULL);
@@ -182,7 +279,7 @@ int main() {
     // }
     // for (int i = 0; i < piped->length; i++) {
     for (int i = 0; i < piped->length; i++) {
-      waitpid(pidList[i], NULL, 0);
+      if (pidList[i] != -1) waitpid(pidList[i], NULL, 0);
     }
     free(piped->str);
     free(piped);
