@@ -229,6 +229,8 @@ int main() {
           printf("error: missing program\n");
           running = false;
         }
+        int stdin_ = 0;
+        int stdout_ = 1;
         if ((running) && (strcmp(usArgChanged[0], "cd") == 0)) {
           pidList[i] = -1;
           char *aim;
@@ -320,9 +322,8 @@ int main() {
           goto Parent;
         }
         pid_t pid = fork();
-        int stdin_ = 0;
-        int stdout_ = 1;
         
+
         // printf("in %d out %d\n", command->inFile, command->outFile);
         fflush(NULL);
         if (command->inFile != 0) {
