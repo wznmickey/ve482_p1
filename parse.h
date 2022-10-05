@@ -55,4 +55,5 @@ void changeQuote(char *input);
 char **changeFromArg(char ** arg);
 char *changeSingleCharArray(char *st);
 bool checkIfNotEnd(char *input);
+bool isValid(char *input);
 #endif

@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "String.h"
 #include "parse.h"
+#include <errno.h>
 void flush() {
   fflush(NULL);
   fflush(NULL);
@@ -26,6 +27,7 @@ void flush() {
   } while (0);
 
 char input[2048];
+char singleLine[2048];  // It is used to handle questions directly after input
 void SIGINTReaction() {
   if (strlen(input) == 0) printf("mumsh $ ");
   return;
@@ -53,20 +55,34 @@ int main() {
     fflush(NULL);
     // AGAIN:
     memset(input, 0, sizeof(char) * 2048);
+    memset(singleLine, 0, sizeof(char) * 2048);
+
     // char ch;
     // int tempIndex = 0;
     int offset = 0;
+    bool running = true;
   READINPUT:
     fgets(input + offset, 2048 - 1, stdin);
+    memcpy(singleLine, input, 2048);
+
     fflush(stdin);
     fflush(stdout);
     if (strlen(input) == 0) {
       printf("exit\n");
       return 0;
     }
-    if (allSpace(input)){
+    if (allSpace(input)) {
       goto RESTART;
     }
+
+    changeQuote(singleLine);
+
+    bool flagIsValid = isValid(singleLine);
+
+    if (!flagIsValid) {
+      goto RESTART;
+    }
+
     bool ifComplete = checkIfComplete(input);
     if (!ifComplete) {
       printf("> ");
@@ -140,13 +156,20 @@ int main() {
           parse(stringList->str[i], tempCommand, &tempInFile, &tempOutFile);
         }
       }
+
       if (pipFile[0] != -1) {
-        firstCommand->inFile = pipFile[0];
+        if (firstCommand->inFile != 0) {
+          firstCommand->inFile = -4;
+        } else
+          firstCommand->inFile = pipFile[0];
       }
       if ((piped->length) - i != 1) {
         pipe(pipFile);
-        // printf("we have a pipe linked %d %d \n",pipFile[0],pipFile[1]);
-        lastCommand->outFile = pipFile[1];
+        if (firstCommand->outFile != 1) {
+          firstCommand->outFile = -5;
+        } else
+          // printf("we have a pipe linked %d %d \n",pipFile[0],pipFile[1]);
+          lastCommand->outFile = pipFile[1];
       }
 
       commandList.lst[i] = firstCommand;
@@ -168,9 +191,28 @@ int main() {
         // printf("use command %lld", temp);
         firstCommand = firstCommand->after;
         if (command->isValid == false) {
+          pidList[i] = -1;
           free(command);
           continue;
         }
+        if (command->inFile == -2) {
+          printf(": No such file or directory\n");
+          running = false;
+        }
+        if (command->outFile == -3) {
+          printf(": Permission denied\n");
+          running = false;
+        }
+        if (command->inFile == -4) {
+          printf("error: duplicated input redirection\n");
+          running = false;
+        }
+        if (command->outFile == -5) {
+          printf("error: duplicated output redirection\n");
+          running = false;
+        }
+        // printf("%d\n", command->inFile);
+
         char **usArg = getArgFromCommand(command);
 
         char **usArgChanged = changeFromArg(usArg);
@@ -182,7 +224,12 @@ int main() {
         // }
         // int x = (strcmp(usArg[0], "cd"));
         // printf("%s\n",usArg[0]);
-        if (strcmp(usArgChanged[0], "cd") == 0) {
+
+        if (usArgChanged[0] == NULL) {
+          printf("error: missing program\n");
+          running = false;
+        }
+        if ((running) && (strcmp(usArgChanged[0], "cd") == 0)) {
           pidList[i] = -1;
           char *aim;
           if (usArgChanged[1] == NULL) {
@@ -191,7 +238,11 @@ int main() {
             if (strcmp(login, "root") == 0) {
               char aim[] = "/root";
               // free(login);
+              errno = 0;
               chdir(aim);
+              if (errno != 0) {
+                printf("%s: No such file or directory\n", aim);
+              }
               goto Parent;
 
             } else {
@@ -211,7 +262,13 @@ int main() {
               // strcat(login, homePath);
               // printf("%s \n",homePath);
               fflush(NULL);
+              errno = 0;
+
               chdir(homePath);
+              if (errno != 0) {
+                printf("%s: No such file or directory\n", homePath);
+              }
+
               fflush(NULL);
               // free(login);
               goto Parent;
@@ -243,7 +300,12 @@ int main() {
             }
             aim[strlen(usArgChanged[1])] = '\0';
           }
+          errno = 0;
           chdir(aim);
+          if (errno != 0) {
+            printf("%s: No such file or directory\n", usArgChanged[1]);
+          }
+
           free(aim);
           fflush(NULL);
           // deleteFullCommandList(command);
@@ -253,10 +315,14 @@ int main() {
           goto Parent;
         }
 
+        if (!running) {
+          pidList[i] = -1;
+          goto Parent;
+        }
         pid_t pid = fork();
         int stdin_ = 0;
         int stdout_ = 1;
-
+        
         // printf("in %d out %d\n", command->inFile, command->outFile);
         fflush(NULL);
         if (command->inFile != 0) {
@@ -292,11 +358,14 @@ int main() {
             free(commandList.lst);
             exit(0);
           } else {
+            errno = 0;
             int status_code = execvp(usArgChanged[0], usArgChanged);
             fflush(NULL);
 
             if (status_code == -1) {
-              printf("Command wrong with error code %d.\n", status_code);
+              printf("%s", usArgChanged[0]);
+              printf(": command not found\n");
+              // printf("Command wrong with error code %d.\n", errno);
               // deleteFullCommandList(command);
               // free(usArg);
               // fflush(NULL);
@@ -314,11 +383,13 @@ int main() {
           fflush(NULL);
           // waitpid(pid, NULL, 0);
           fflush(NULL);
+          // printf("well\n");
           if (stdin_ != 0) {
             close(0);
             dup2(stdin_, 0);
             close(stdin_);
           }
+          // printf("well2\n");
 
           if (stdout_ != 1) {
             close(1);
@@ -326,12 +397,18 @@ int main() {
             close(stdout_);
           }
           fflush(NULL);
+          // printf("well3\n");
         }
+        // printf("well4\n");
+
         deleteFullCommandList(command);
+        // printf("well5\n");
 
         free(usArg);
         deleteChar2Array(usArgChanged);
+        // printf("well6\n");
       }
+      // printf("well7\n");
     }
     // for (int i=0;i<commandList.length;i++)
     // {

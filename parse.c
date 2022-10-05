@@ -1,5 +1,6 @@
 #include "parse.h"
 #include "String.h"
+#include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -249,12 +250,12 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
   // output->before = NULL;
   output->isValid = false;
   output->after = NULL;
-  if (*tempInFile >= 0) {
+  if (*tempInFile != -1) {
     output->inFile = *tempInFile;
   } else {
     output->inFile = 0;
   }
-  if (*tempOutFile >= 0) {
+  if (*tempOutFile != -1) {
     output->outFile = *tempOutFile;
   } else {
     output->outFile = 1;
@@ -273,16 +274,33 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
       if ((*i) != ' ') break;
     }
     char *tt = changeSingleCharArray(i);
+    errno = 0;
     int temp = open(tt, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (errno != 0) {
+      // if (errno == 13) {
+      printf("%s", tt);
+      temp = -3;
+    }
+    // printf("%d\n", errno);
     free(tt);
+    if (*tempOutFile != -1) {
+      *tempOutFile = -5;
+      temp = -5;
+    }
     if ((output->before != NULL) && (output->before->isValid)) {
-      output->before->outFile = temp;
+      if (output->before->outFile != 1) {
+        output->before->outFile = -5;
+      } else {
+        output->before->outFile = temp;
+      }
+
     } else {
       *tempOutFile = temp;
     }
 
     // printf("open %s in %d\n", i, output->before->outFile);
     deleteString(tempInput);
+
     // free(tempInput);
     return;
   }
@@ -294,11 +312,25 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
       if ((*i) != ' ') break;
     }
     char *tt = changeSingleCharArray(i);
-
+    errno = 0;
     int temp = open(tt, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    //  printf("%d\n",errno);
+    if (errno != 0) {
+      // if (errno == 13) {
+      printf("%s", tt);
+      temp = -3;
+    }
     free(tt);
+    if (*tempOutFile != -1) {
+      *tempOutFile = -5;
+      temp = -5;
+    }
     if ((output->before != NULL) && (output->before->isValid)) {
-      output->before->outFile = temp;
+      if (output->before->outFile != 1) {
+        output->before->outFile = -5;
+      } else {
+        output->before->outFile = temp;
+      }
     } else {
       *tempOutFile = temp;
     }
@@ -315,14 +347,27 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
       if ((*i) != ' ') break;
     }
     char *tt = changeSingleCharArray(i);
-
+    errno = 0;
     int temp = open(tt, O_RDWR, S_IRUSR | S_IWUSR);
+    if (errno == 2) {
+      temp = -2;
+      printf("%s", tt);
+    }
     free(tt);
+    if (*tempInFile != -1) {
+      *tempInFile = -4;
+      temp = -4;
+    }
     if ((output->before != NULL) && (output->before->isValid)) {
-      output->before->inFile = temp;
+      if (output->before->inFile != 1) {
+        output->before->inFile = -4;
+      } else {
+        output->before->inFile = temp;
+      }
     } else {
       *tempInFile = temp;
     }
+    // printf("%d",errno);
 
     // printf("open %s in %d\n", i, output->before->inFile);
     deleteString(tempInput);
@@ -531,4 +576,65 @@ char *changeSingleCharArray(char *st) {
   }
   val[index] = '\0';
   return val;
+}
+bool isValid(char *input) {
+  size_t len = strlen(input);
+  bool isSpaceGiven =
+      true;  // whether there is a space before (only for >> cases)
+  bool isSyntaxed = false;   // whether there is a syntax before
+  bool isLastRight = false;  // whether there is a > before (only for >> cases)
+  bool isLastPipe = false;   // whether last one is |
+  for (size_t i = 0; i < len; i++) {
+    switch (input[i]) {
+      case ' ': {
+        isSpaceGiven = true;
+        continue;
+      }
+      case '>': {
+        if (!(((isSpaceGiven == false) && (isLastRight)) ||
+              (isSyntaxed == false))) {
+          printf("syntax error near unexpected token `>'\n");
+          return false;
+        }
+        isSpaceGiven = false;
+        isSyntaxed = true;
+        isLastRight = true;
+        isLastPipe = false;
+        continue;
+      }
+      case '<': {
+        if (isSyntaxed) {
+          printf("syntax error near unexpected token `<'\n");
+          return false;
+        }
+        isSpaceGiven = false;
+        isSyntaxed = true;
+        isLastRight = false;
+        isLastPipe = false;
+        continue;
+      }
+      case '|': {
+        if (isLastPipe) {
+          printf("error: missing program\n");
+          return false;
+        }
+        if (isSyntaxed) {
+          printf("syntax error near unexpected token `|'\n");
+          return false;
+        }
+        isSpaceGiven = false;
+        isSyntaxed = true;
+        isLastRight = false;
+        isLastPipe = true;
+        continue;
+      }
+      default: {
+        isSpaceGiven = false;
+        isSyntaxed = false;
+        isLastRight = false;
+        isLastPipe = false;
+      }
+    }
+  }
+  return true;
 }
