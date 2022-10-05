@@ -13,14 +13,18 @@ void flush() {
   fflush(NULL);
   return;
 }
-#define printf(...)    \
-  printf(__VA_ARGS__); \
-  flush();
-#define fgets(...)    \
-  flush();            \
-  fgets(__VA_ARGS__); \
-  flush();
-char input[2048];
+#define printf(...)      \
+  do {                   \
+    printf(__VA_ARGS__); \
+    flush();             \
+  } while (0);
+#define fgets(...)      \
+  do {                  \
+    flush();            \
+    fgets(__VA_ARGS__); \
+    flush();            \
+  } while (0);          \
+  char input[2048];
 void SIGINTReaction() {
   if (strlen(input) == 0) printf("mumsh $ ");
   return;
