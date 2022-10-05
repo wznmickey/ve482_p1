@@ -272,7 +272,7 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     for (i = (tempInput->start) + 2;; i++) {
       if ((*i) != ' ') break;
     }
-    char * tt = changeSingleCharArray(i);
+    char *tt = changeSingleCharArray(i);
     int temp = open(tt, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     free(tt);
     if ((output->before != NULL) && (output->before->isValid)) {
@@ -292,7 +292,8 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     char *i;
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
-    }    char * tt = changeSingleCharArray(i);
+    }
+    char *tt = changeSingleCharArray(i);
 
     int temp = open(tt, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
     free(tt);
@@ -313,7 +314,7 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
     }
-    char * tt = changeSingleCharArray(i);
+    char *tt = changeSingleCharArray(i);
 
     int temp = open(tt, O_RDWR, S_IRUSR | S_IWUSR);
     free(tt);
@@ -392,6 +393,27 @@ bool checkIfComplete(char *input) {
     index++;
   }
   return ((!inDouble) && (!inSingle));
+}
+bool checkIfNotEnd(char *input) {
+  int offset = 0;
+AGAIN:
+  // if (offset >= ((int)strlen(input))-2) {
+  //   return false;
+  // }
+  switch (input[(int)strlen(input) - 1 - (int)offset]) {
+    case '>':
+      return true;
+    case '<':
+      return true;
+    case '|':
+      return true;
+    case ' ': {
+      offset++;
+      goto AGAIN;
+    }
+    default:
+      return false;
+  }
 }
 void changeQuote(char *input) {
   int index = 0;

@@ -340,3 +340,11 @@ void deleteChar2Array(char **array) {
   free(array);
   return;
 }
+bool allSpace(char *input) {
+  for (int i = 0; i < (int)strlen(input); i++) {
+    if ((input[i] != ' ') && (input[i] != '\n')) {
+      return false;
+    }
+  }
+  return true;
+}

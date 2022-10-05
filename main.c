@@ -64,13 +64,24 @@ int main() {
       printf("exit\n");
       return 0;
     }
+    if (allSpace(input)){
+      goto RESTART;
+    }
     bool ifComplete = checkIfComplete(input);
     if (!ifComplete) {
       printf("> ");
       offset = (int)strlen(input);
       goto READINPUT;
     }
-        input[strlen(input) - 1] = '\0';  // remove the \n at the end.
+
+    input[strlen(input) - 1] = '\0';  // remove the \n at the end.
+
+    bool isNotEnd = checkIfNotEnd(input);
+    if (isNotEnd) {
+      printf("> ");
+      offset = (int)strlen(input);
+      goto READINPUT;
+    }
 
     // TODO : come with new line if not complete
 

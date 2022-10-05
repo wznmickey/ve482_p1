@@ -33,4 +33,5 @@ String *spiltStringByIndexLevel2(String *st, int find);
 String *copyFromIndex(String *st, int placeLeft, int placeRight);
 twoString getString(String *st, int placeLeft, int placeRight);
 void deleteChar2Array(char **array);
+bool allSpace(char *input);
 #endif
