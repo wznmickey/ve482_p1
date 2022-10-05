@@ -257,9 +257,8 @@ int main() {
             free(usArg);
             fflush(NULL);
             free(commandList.lst);
-            exit (0);
-          } else 
-          {
+            exit(0);
+          } else {
             int status_code = execvp(usArg[0], usArg);
             fflush(NULL);
 
