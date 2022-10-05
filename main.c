@@ -322,7 +322,6 @@ int main() {
           goto Parent;
         }
         pid_t pid = fork();
-        
 
         // printf("in %d out %d\n", command->inFile, command->outFile);
         fflush(NULL);
