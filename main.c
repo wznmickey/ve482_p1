@@ -55,14 +55,27 @@ int main() {
     memset(input, 0, sizeof(char) * 2048);
     // char ch;
     // int tempIndex = 0;
-    fgets(input, 2048 - 1, stdin);
+    int offset = 0;
+  READINPUT:
+    fgets(input + offset, 2048 - 1, stdin);
     fflush(stdin);
     fflush(stdout);
     if (strlen(input) == 0) {
       printf("exit\n");
       return 0;
     }
-    input[strlen(input) - 1] = '\0';  // remove the \n at the end.
+    bool ifComplete = checkIfComplete(input);
+    if (!ifComplete) {
+      printf("> ");
+      offset = (int)strlen(input);
+      goto READINPUT;
+    }
+        input[strlen(input) - 1] = '\0';  // remove the \n at the end.
+
+    // TODO : come with new line if not complete
+
+    changeQuote(input);
+
     if (strcmp(input, "exit") == 0) {
       // EXIT:
       printf("exit\n");
@@ -149,6 +162,8 @@ int main() {
         }
         char **usArg = getArgFromCommand(command);
 
+        char **usArgChanged = changeFromArg(usArg);
+        // printf("%s \n",usArgChanged[0]);
         // for (int i = 0; i < 1000; i++) {
         //   if (usArg[i] == NULL) break;
 
@@ -156,10 +171,10 @@ int main() {
         // }
         // int x = (strcmp(usArg[0], "cd"));
         // printf("%s\n",usArg[0]);
-        if (strcmp(usArg[0], "cd") == 0) {
+        if (strcmp(usArgChanged[0], "cd") == 0) {
           pidList[i] = -1;
           char *aim;
-          if (usArg[1] == NULL) {
+          if (usArgChanged[1] == NULL) {
             // no argument, directly go to home page
             char *login = getlogin();
             if (strcmp(login, "root") == 0) {
@@ -194,33 +209,34 @@ int main() {
             // chdir(aim);
             // goto Parent;
           }
-          if (usArg[1] != NULL && usArg[2] != NULL)  // to many arguments
+          if (usArgChanged[1] != NULL &&
+              usArgChanged[2] != NULL)  // to many arguments
           {
             goto Parent;
           }
-          if ((usArg[1][0] != '/')
+          if ((usArgChanged[1][0] != '/')
               // && ((usArg[1][0] != '~'))
               )  // relative path
           {
-            aim = malloc(sizeof(char) * (2 + 1 + strlen(usArg[1])));
+            aim = malloc(sizeof(char) * (2 + 1 + strlen(usArgChanged[1])));
             aim[0] = '.';
             aim[1] = '/';
-            for (int i = 0; i < (int)strlen(usArg[1]); i++) {
-              aim[i + 2] = usArg[1][i];
+            for (int i = 0; i < (int)strlen(usArgChanged[1]); i++) {
+              aim[i + 2] = usArgChanged[1][i];
             }
-            aim[2 + strlen(usArg[1])] = '\0';
+            aim[2 + strlen(usArgChanged[1])] = '\0';
           } else {
-            aim = malloc(sizeof(char) * (1 + strlen(usArg[1])));
-            for (int i = 0; i < (int)strlen(usArg[1]); i++) {
-              aim[i] = usArg[1][i];
+            aim = malloc(sizeof(char) * (1 + strlen(usArgChanged[1])));
+            for (int i = 0; i < (int)strlen(usArgChanged[1]); i++) {
+              aim[i] = usArgChanged[1][i];
             }
-            aim[strlen(usArg[1])] = '\0';
+            aim[strlen(usArgChanged[1])] = '\0';
           }
           chdir(aim);
           free(aim);
           fflush(NULL);
           // deleteFullCommandList(command);
-
+          // deleteChar2Array(usArgChanged);
           // free(usArg);
           fflush(NULL);
           goto Parent;
@@ -252,7 +268,7 @@ int main() {
           signal(SIGTTOU, SIG_DFL);
           signal(SIGCHLD, SIG_DFL);
           fflush(NULL);
-          if (strcmp(usArg[0], "pwd") == 0) {
+          if (strcmp(usArgChanged[0], "pwd") == 0) {
             char *pwdPath = NULL;
             pwdPath = getcwd(NULL, 0);
             printf("%s\n", pwdPath);
@@ -260,11 +276,12 @@ int main() {
             free(pwdPath);
             deleteFullCommandList(command);
             free(usArg);
+            deleteChar2Array(usArgChanged);
             fflush(NULL);
             free(commandList.lst);
             exit(0);
           } else {
-            int status_code = execvp(usArg[0], usArg);
+            int status_code = execvp(usArgChanged[0], usArgChanged);
             fflush(NULL);
 
             if (status_code == -1) {
@@ -302,6 +319,7 @@ int main() {
         deleteFullCommandList(command);
 
         free(usArg);
+        deleteChar2Array(usArgChanged);
       }
     }
     // for (int i=0;i<commandList.length;i++)

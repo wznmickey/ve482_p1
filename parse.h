@@ -1,6 +1,15 @@
 #ifndef WZNMICKEY_PARSE
 #define WZNMICKEY_PARSE
 #include "String.h"
+
+#define SINGLE -1
+#define DOUBLE -2
+#define SPACE -3
+#define LEFTARROW -4
+#define RIGHTARROW -5
+#define PIPE -6
+#define DROP -7
+
 typedef struct ArgList {
   String **argc;
   int argv;
@@ -41,4 +50,9 @@ Command *deleteFullCommandList(Command *c);
 StringList *seperateString(String *input);
 void deleteStringList(StringList *list);
 StringList *dividesByPipe(String *st);
+bool checkIfComplete(char *input) ;
+void changeQuote(char *input);
+char **changeFromArg(char ** arg);
+char *changeSingleCharArray(char *st);
+
 #endif

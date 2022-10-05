@@ -32,4 +32,5 @@ int findStringEscape(String *st, char aim, int offset);
 String *spiltStringByIndexLevel2(String *st, int find);
 String *copyFromIndex(String *st, int placeLeft, int placeRight);
 twoString getString(String *st, int placeLeft, int placeRight);
+void deleteChar2Array(char **array);
 #endif

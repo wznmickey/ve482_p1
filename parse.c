@@ -85,17 +85,19 @@ char **getArgFromArgList(ArgList *arg) {
   int toPush = 0;
 
   for (int i = 0; i < arg->argv; i++) {
-    if (strcmp(getCharArray(arg->argc[i]), "") == 0)
+    if (strcmp(getCharArray((arg->argc[i])), "") == 0)
       continue;  // remove empty args.
 
-    val[toPush] = getCharArray(arg->argc[i]);
+    // changeQuoteBack(&arg->argc[i]);
+
+    val[toPush] = getCharArray((arg->argc[i]));
     toPush++;
   }
   val[toPush] = NULL;
   return val;
 }
 char **getArgFromCommand(Command *output) {
-  return getArgFromArgList(output->args);
+  return getArgFromArgList((output->args));
 }
 
 int getPlace(String *input, int before, int offset) {
@@ -270,7 +272,9 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     for (i = (tempInput->start) + 2;; i++) {
       if ((*i) != ' ') break;
     }
-    int temp = open(i, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    char * tt = changeSingleCharArray(i);
+    int temp = open(tt, O_APPEND | O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    free(tt);
     if ((output->before != NULL) && (output->before->isValid)) {
       output->before->outFile = temp;
     } else {
@@ -288,8 +292,10 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     char *i;
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
-    }
-    int temp = open(i, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    }    char * tt = changeSingleCharArray(i);
+
+    int temp = open(tt, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    free(tt);
     if ((output->before != NULL) && (output->before->isValid)) {
       output->before->outFile = temp;
     } else {
@@ -307,8 +313,10 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     for (i = (tempInput->start) + 1;; i++) {
       if ((*i) != ' ') break;
     }
+    char * tt = changeSingleCharArray(i);
 
-    int temp = open(i, O_RDWR, S_IRUSR | S_IWUSR);
+    int temp = open(tt, O_RDWR, S_IRUSR | S_IWUSR);
+    free(tt);
     if ((output->before != NULL) && (output->before->isValid)) {
       output->before->inFile = temp;
     } else {
@@ -362,4 +370,143 @@ Command *deleteFullCommandList(Command *c) {
   // deleteFullCommandList(c->after);
   deleteCommand(c);
   return NULL;
+}
+bool checkIfComplete(char *input) {
+  int index = 0;
+  bool inDouble = false;
+  bool inSingle = false;
+  while (true) {
+    if (input[index] == '\'') {
+      if (!inDouble) {
+        inSingle = !inSingle;
+      }
+    }
+    if (input[index] == '"') {
+      if (!inSingle) {
+        inDouble = !inDouble;
+      }
+    }
+    if (input[index] == '\0') {
+      break;
+    }
+    index++;
+  }
+  return ((!inDouble) && (!inSingle));
+}
+void changeQuote(char *input) {
+  int index = 0;
+  bool inDouble = false;
+  bool inSingle = false;
+  while (true) {
+    if (input[index] == '\0') {
+      break;
+    }
+    if (input[index] == '\'') {
+      if (!inDouble) {
+        inSingle = !inSingle;
+        input[index] = DROP;
+      } else {
+        input[index] = SINGLE;
+      }
+      index++;
+      continue;
+    }
+    if (input[index] == '"') {
+      if (!inSingle) {
+        inDouble = !inDouble;
+        input[index] = DROP;
+      } else {
+        input[index] = DOUBLE;
+      }
+      index++;
+      continue;
+    }
+    if (inDouble || inSingle) {
+      if (input[index] == ' ') {
+        input[index] = SPACE;
+      }
+      if (input[index] == '>') {
+        input[index] = RIGHTARROW;
+      }
+      if (input[index] == '<') {
+        input[index] = LEFTARROW;
+      }
+      if (input[index] == '|') {
+        input[index] = PIPE;
+      }
+    }
+    index++;
+  }
+  return;
+}
+char **changeFromArg(char **arg) {
+  int outIndex = 0;
+  while (true) {
+    if (arg[outIndex] == NULL) {
+      break;
+    }
+    outIndex++;
+  }
+  char **val = malloc(sizeof(char *) * (size_t)(outIndex + 1));
+  for (int i = 0; i < outIndex; i++) {
+    val[i] = changeSingleCharArray(arg[i]);
+  }
+  val[outIndex] = NULL;
+  return val;
+}
+
+char *changeSingleCharArray(char *st) {
+  int index = 0;
+  int len = (int)strlen(st);
+
+  char *val = malloc(sizeof(char) * (size_t)(len + 1));
+  for (int i = 0; i < len; i++) {
+    if (((st)[i]) != DROP) {
+      (val)[index] = st[i];
+      switch ((val)[index]) {
+        case LEFTARROW: {
+          ((val)[index]) = '<';
+          index++;
+          continue;
+        }
+        case RIGHTARROW: {
+          ((val)[index]) = '>';
+          index++;
+
+          continue;
+        }
+        case SPACE: {
+          ((val)[index]) = ' ';
+          index++;
+
+          continue;
+        }
+        case PIPE: {
+          ((val)[index]) = '|';
+          index++;
+
+          continue;
+        }
+        case SINGLE: {
+          ((val)[index]) = '\'';
+          index++;
+
+          continue;
+        }
+        case DOUBLE: {
+          ((val)[index]) = '"';
+          index++;
+
+          continue;
+        }
+        default: {
+          index++;
+
+          continue;
+        }
+      }
+    }
+  }
+  val[index] = '\0';
+  return val;
 }

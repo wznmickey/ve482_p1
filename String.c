@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "parse.h"
 // since the string is not very long. Use int rather than size_t.
 String *initString(char input[]) {
   String *val = malloc(sizeof(String));
@@ -105,7 +106,8 @@ int findStringEscape(String *st, char aim, int offset) {
     }
   }
   for (int i = index; i < st->len; i++) {
-    if ((st->start[i] == aim) || (st->start[i] == '>') || (st->start[i] == '<')) {
+    if ((st->start[i] == aim) || (st->start[i] == '>') ||
+        (st->start[i] == '<')) {
       // printf("here \n");
       // fflush(NULL);
       // if (st->rawStatus[i] == -1) {
@@ -208,13 +210,76 @@ String *copyString(String *st) {
   strcpy(temp->start, st->start);
   temp->rawStatus =
       malloc(sizeof(int) * (size_t)(st->len + 1));  // 1 more for '\0'
-  for (int i=0;i<temp->len;i++)
-  {
+  for (int i = 0; i < temp->len; i++) {
     temp->rawStatus[i] = st->rawStatus[i];
   }
   return temp;
 }
 char *getCharArray(String *st) { return st->start; }
+// char *getCharArray(String **st) {
+//   String *temp = malloc(sizeof(String));
+
+//   temp->mallocStart = temp;
+//   temp->used = 1;
+//   temp->start = malloc(sizeof(char) * (size_t)((*st)->len + 1));
+
+//   int index = 0;
+
+//   for (int i = 0; i <= (*st)->len; i++) {
+//     if ((((*st)->start)[i]) != DROP) {
+//       (temp->start)[index] = ((*st)->start)[i];
+//       switch ((temp->start)[index]) {
+//         case LEFTARROW: {
+//           (temp->start)[index] = '<';
+//           index++;
+//           continue;
+//         }
+//         case RIGHTARROW: {
+//           (temp->start)[index] = '>';
+//           index++;
+
+//           continue;
+//         }
+//         case SPACE: {
+//           (temp->start)[index] = ' ';
+//           index++;
+
+//           continue;
+//         }
+//         case PIPE: {
+//           (temp->start)[index] = '|';
+//           index++;
+
+//           continue;
+//         }
+//         case SINGLE: {
+//           (temp->start)[index] = '\'';
+//           index++;
+
+//           continue;
+//         }
+//         case DOUBLE: {
+//           (temp->start)[index] = '"';
+//           index++;
+
+//           continue;
+//         }
+//         default: {
+//           index++;
+
+//           continue;
+//         }
+//       }
+//     }
+//   }
+
+//   temp->len = (int)strlen(temp->start);
+//   // deleteString(*st);
+//   *st = temp;
+//   // temp->rawStatus =
+
+//   return temp->start;
+// }
 twoString getString(String *st, int placeLeft, int placeRight) {
   int getLen = placeRight - placeLeft;
   int getRemain = st->len - getLen;
@@ -264,4 +329,14 @@ twoString getString(String *st, int placeLeft, int placeRight) {
 
   deleteString(st);
   return ans;
+}
+void deleteChar2Array(char **array) {
+  int index = 0;
+  while (true) {
+    if (array[index] == NULL) break;
+    free(array[index]);
+    index++;
+  }
+  free(array);
+  return;
 }
