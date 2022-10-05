@@ -23,8 +23,9 @@ void flush() {
     flush();            \
     fgets(__VA_ARGS__); \
     flush();            \
-  } while (0);          \
-  char input[2048];
+  } while (0);
+
+char input[2048];
 void SIGINTReaction() {
   if (strlen(input) == 0) printf("mumsh $ ");
   return;
