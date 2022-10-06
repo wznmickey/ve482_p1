@@ -89,9 +89,9 @@ int main() {
       offset = (int)strlen(input);
       goto READINPUT;
     }
-
+    if ( input[strlen(input) - 1]=='\n'){
     input[strlen(input) - 1] = '\0';  // remove the \n at the end.
-
+    }
     bool isNotEnd = checkIfNotEnd(input);
     if (isNotEnd) {
       printf("> ");
