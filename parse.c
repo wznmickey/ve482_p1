@@ -638,3 +638,12 @@ bool isValid(char *input) {
   }
   return true;
 }
+bool checkIsBack(char *input) {
+  size_t len =
+      strlen(input);  // The case of len ==0 should not happen in this function.
+  if (input[len - 1] == '&') {
+    input[len - 1] = '\0';  // delete token
+    return true;
+  }
+  return false;
+}

@@ -41,6 +41,20 @@ enum token {
   DOUBLELEFT,
   SINGLERIGHT,
 };
+enum runningState {
+  done,
+  running,
+};
+typedef struct Job {
+  int jobid;
+  char *jobcmd;
+  struct Job *nextJob;
+  enum runningState state;
+
+  bool isValid;
+
+  int pid;  // for possible use
+} Job;
 
 char **getArgFromCommand(Command *output);
 void parse(String *input, Command *output, int *tempInFile, int *tempOutFile);
@@ -50,10 +64,11 @@ Command *deleteFullCommandList(Command *c);
 StringList *seperateString(String *input);
 void deleteStringList(StringList *list);
 StringList *dividesByPipe(String *st);
-bool checkIfComplete(char *input) ;
+bool checkIfComplete(char *input);
 void changeQuote(char *input);
-char **changeFromArg(char ** arg);
+char **changeFromArg(char **arg);
 char *changeSingleCharArray(char *st);
 bool checkIfNotEnd(char *input);
 bool isValid(char *input);
+bool checkIsBack(char *input);
 #endif

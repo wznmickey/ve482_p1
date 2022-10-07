@@ -33,18 +33,20 @@ void SIGINTReaction() {
   if (strlen(input) == 0) printf("mumsh $ ");
   return;
 }
-
 int main() {
   signal(SIGQUIT, SIG_IGN);
   signal(SIGINT, SIGINTReaction);
   signal(SIGTSTP, SIG_IGN);
   signal(SIGTTIN, SIG_IGN);
   signal(SIGTTOU, SIG_IGN);
-  signal(SIGCHLD, SIG_IGN);
+  // signal(SIGCHLD, SIG_IGN);
   setpgid(getpid(), getpid());
   tcsetpgrp(STDOUT_FILENO, getpid());
   tcsetpgrp(STDIN_FILENO, getpid());
-
+  Job *firstJob = malloc(sizeof(Job));
+  firstJob->isValid = false;
+  Job *lastJob = firstJob;
+  int currentJobId = 1;
   while (true) {
   RESTART:
     fflush(NULL);
@@ -70,12 +72,32 @@ int main() {
     fflush(stdout);
     if (strlen(input) == 0) {
       printf("exit\n");
-      return 0;
+      break;
     }
     if (allSpace(input)) {
       goto RESTART;
     }
 
+    while (true) {
+      pid_t temp = waitpid(-1, NULL, WNOHANG);
+      Job *tempJob = firstJob;
+      // printf("stop %d\n", temp);
+      if (temp <= 0) {
+        break;
+      }
+      // printf("stop");
+      while (true) {
+        if ((tempJob != NULL) && (tempJob->isValid) && (tempJob->pid == temp)) {
+          // printf("set\n");
+          tempJob->state = done;
+          break;
+        }
+        if (tempJob == NULL) {
+          break;
+        }
+        tempJob = tempJob->nextJob;
+      }
+    }
     changeQuote(singleLine);
 
     bool flagIsValid = isValid(singleLine);
@@ -108,13 +130,32 @@ int main() {
       // EXIT:
       printf("exit\n");
       fflush(NULL);
-      return 0;
+      break;
     }
     if (strlen(input) == 0) {
       goto RESTART;
     }
     // printf("1\n");
 
+    bool isBack = checkIsBack(input);
+    if (isBack) {
+      Job *temp;
+      if (!(lastJob->isValid)) {
+        temp = lastJob;
+      } else {
+        temp = malloc(sizeof(Job));
+        lastJob->nextJob = temp;
+      }
+      temp->nextJob = NULL;
+      temp->isValid = true;
+      temp->jobid = currentJobId;
+      currentJobId++;
+      temp->state = running;
+      temp->jobcmd = malloc(sizeof(char) * (strlen(input) + 1));
+      strcpy(temp->jobcmd, input);
+      printf("[%d] %s&\n", temp->jobid, temp->jobcmd);
+      lastJob=temp;
+    }
     fflush(stdout);
     String *inputS = initString(input);
     // Command *command = malloc(sizeof(Command));
@@ -234,6 +275,30 @@ int main() {
         }
         int stdin_ = 0;
         int stdout_ = 1;
+        if ((running) && (strcmp(usArgChanged[0], "jobs") == 0)) {
+          // printf("here");
+          pidList[i] = -1;
+          Job *temp = firstJob;
+          while (true) {
+            if (temp == NULL) {
+              // printf("1");
+              break;
+            }
+            if (temp->isValid == false) {
+              // {printf("2");
+              break;
+            }
+            printf("[%d] ", temp->jobid);
+            if (temp->state == running) {
+              printf("running ");
+            } else {
+              printf("done ");
+            }
+            printf("%s&\n", temp->jobcmd);
+            temp = temp->nextJob;
+          }
+          goto Parent;
+        }
         if ((running) && (strcmp(usArgChanged[0], "cd") == 0)) {
           pidList[i] = -1;
           char *aim;
@@ -252,8 +317,8 @@ int main() {
 
             } else {
               char homePath[6 + 1 +
-                            strlen(login)];  // man useradd can allow name of
-                                             // maximum of 32 chars.
+                            strlen(login)];  // man useradd can allow name
+                                             // of maximum of 32 chars.
               homePath[0] = '/';
               homePath[1] = 'h';
               homePath[2] = 'o';
@@ -362,6 +427,13 @@ int main() {
             exit(0);
           } else {
             errno = 0;
+
+            // printf("Will use ");
+            // for (int i = 0; i < 1000; i++) {
+            //   if (usArgChanged[i] == NULL) break;
+            //   printf("%s ", usArgChanged[i]);
+            // }
+            // printf("\n");
             int status_code = execvp(usArgChanged[0], usArgChanged);
             fflush(NULL);
 
@@ -380,8 +452,12 @@ int main() {
           fflush(NULL);
           return 0;
         } else {
-          pidList[i] = pid;
-
+          if (!isBack) {
+            pidList[i] = pid;
+          } else {
+            pidList[i] = -1;
+            lastJob->pid = pid;
+          }
         Parent:
           fflush(NULL);
           // waitpid(pid, NULL, 0);
@@ -428,5 +504,19 @@ int main() {
     // }
     free(commandList.lst);
   }
-  return 0;
+  // while (true) {
+  //   if (firstJob != NULL) {
+  //     if (firstJob->isValid) {
+        
+  //       free(firstJob->jobcmd);
+  //     }
+  //     // printf("free");
+  //     Job *temp = firstJob;
+  //     firstJob = firstJob->nextJob;
+  //     free(temp);
+  //   } else {
+  //     break;
+  //   }
+  // }
+  exit (0);
 }
