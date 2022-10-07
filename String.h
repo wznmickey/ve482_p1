@@ -11,10 +11,6 @@ typedef struct String {
   struct String
       *mallocStart;  // free will free all the malloc, which will make splice
                      // illegal. Use this to find the start point of malloc.
-  int *rawStatus;    // flag whether this char is raw (in '' or "")
-  // 0 -> not in
-  // 1 -> is in
-  // 2 -> is itself
 } String;
 typedef struct twoString {
   String *st1;

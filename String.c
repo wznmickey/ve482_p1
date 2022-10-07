@@ -14,12 +14,6 @@ String *initString(char input[]) {
   strcpy(val->start, input);
   val->mallocStart = val;
   val->used = 1;  // itself
-  val->rawStatus = malloc(sizeof(int) * strlen(input) + 5);
-
-  for (int i = 0; i < (int)strlen(input); i++) {
-    (val->rawStatus)[i] = -1;
-  }
-  (val->rawStatus)[(int)strlen(input)] = '\0';  // for copy
   return val;
 }
 String *deleteString(String *val) {
@@ -33,7 +27,6 @@ String *deleteString(String *val) {
        val))  // it is the first string and the full block is useless
   {
     free(val->start);
-    free(val->rawStatus);
     free(val);
   } else {
     if (val->mallocStart->used ==
@@ -41,7 +34,6 @@ String *deleteString(String *val) {
               // not hebing with the above because we need make sure
               // val!=val->mallocStart. Otherwise it is free twice.
       free(val->mallocStart->start);
-      free(val->mallocStart->rawStatus);
       free(val->mallocStart);
       free(val);
     } else {
@@ -88,9 +80,6 @@ int changeString(String *st, char aim, char newOne) {
     return -1;  // failed
   }
   st->start[x] = newOne;
-  if (newOne == '\0') {
-    st->rawStatus[x] = '\0';
-  }
   return x;
 }
 
@@ -106,7 +95,6 @@ String *spiltString(String *st, char aim) {
   val->len = (int)strlen(val->start);
   val->used =
       1;  // It is meaningless. Just to init. The value will not be updated.
-  val->rawStatus = st->rawStatus + find + 1;
   st->len = (int)strlen(st->start);
   st->mallocStart->used++;
   return val;
@@ -119,7 +107,6 @@ String *spiltStringByIndex(String *st, int find) {
   val->len = (int)strlen(val->start);
   val->used =
       1;  // It is meaningless. Just to init. The value will not be updated.
-  val->rawStatus = st->rawStatus + find + 1;
 
   String *ans = copyString(val);
   free(val);
@@ -136,7 +123,6 @@ String *spiltStringByIndexLevel2(String *st, int find) {
   val->len = (int)strlen(val->start);
   val->used =
       1;  // It is meaningless. Just to init. The value will not be updated.
-  val->rawStatus = st->rawStatus + find + 1;
 
   String *ans = copyString(val);
   free(val);
@@ -152,13 +138,10 @@ String *copyFromIndex(String *st, int placeLeft, int placeRight) {
   temp->start = malloc(sizeof(char) * (size_t)((temp->len) + 1));
   temp->mallocStart = temp;
   temp->used = 1;
-  temp->rawStatus = malloc(sizeof(int) * (size_t)(temp->len + 1));
   for (int i = 0; i < temp->len; i++) {
     (temp->start)[i] = (st->start)[i + placeLeft];
-    (temp->rawStatus)[i] = (st->rawStatus)[i + placeLeft];
   }
   (temp->start)[temp->len] = '\0';
-  (temp->rawStatus)[temp->len] = '\0';
   return temp;
 }
 
@@ -170,11 +153,6 @@ String *copyString(String *st) {
       malloc(sizeof(char) * (size_t)(st->len + 1));  // 1 more for '\0'
   temp->mallocStart = temp;
   strcpy(temp->start, st->start);
-  temp->rawStatus =
-      malloc(sizeof(int) * (size_t)(st->len + 1));  // 1 more for '\0'
-  for (int i = 0; i < temp->len; i++) {
-    temp->rawStatus[i] = st->rawStatus[i];
-  }
   return temp;
 }
 char *getCharArray(String *st) { return st->start; }
@@ -187,9 +165,6 @@ twoString getString(String *st, int placeLeft, int placeRight) {
 
   remain->start = malloc(sizeof(char) * (size_t)(getRemain + 1));
   get->start = malloc(sizeof(char) * (size_t)(getLen + 1));
-
-  remain->rawStatus = malloc(sizeof(int) * (size_t)(getRemain + 1));
-  get->rawStatus = malloc(sizeof(int) * (size_t)(getLen + 1));
 
   remain->mallocStart = remain;
   get->mallocStart = get;
@@ -205,11 +180,9 @@ twoString getString(String *st, int placeLeft, int placeRight) {
   for (int i = 0; i < st->len; i++) {
     if ((i >= placeLeft) && (i < placeRight)) {
       (get->start)[toGetI] = (st->start)[i];
-      (get->rawStatus)[toGetI] = (st->rawStatus)[i];
       toGetI++;
     } else {
       (remain->start)[remainI] = (st->start)[i];
-      (remain->rawStatus)[remainI] = (st->rawStatus)[i];
       remainI++;
     }
   }
