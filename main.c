@@ -1,7 +1,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -9,24 +9,7 @@
 #include <errno.h>
 #include "String.h"
 #include "parse.h"
-
-void flush() {
-  fflush(NULL);
-  fflush(NULL);
-  return;
-}
-#define printf(...)      \
-  do {                   \
-    printf(__VA_ARGS__); \
-    flush();             \
-  } while (0);
-#define fgets(...)      \
-  do {                  \
-    flush();            \
-    fgets(__VA_ARGS__); \
-    flush();            \
-  } while (0);
-
+#include "flush.h"
 char input[1030];
 char singleLine[1030];  // It is used to handle questions directly after input
 void SIGINTReaction() {
@@ -48,13 +31,8 @@ int main() {
   int currentJobId = 1;
   while (true) {
   RESTART:
-    fflush(NULL);
-    fflush(stdin);
-    fflush(stdout);
+
     printf("mumsh $ ");
-    fflush(stdin);
-    fflush(stdout);
-    fflush(NULL);
 
     memset(input, 0, sizeof(char) * 1026);
     memset(singleLine, 0, sizeof(char) * 1026);
@@ -65,8 +43,6 @@ int main() {
     fgets(input + offset, 1030 - 1, stdin);
     memcpy(singleLine, input, 1026);
 
-    fflush(stdin);
-    fflush(stdout);
     if (strlen(input) == 0) {
       printf("exit\n");
       break;
@@ -122,7 +98,6 @@ int main() {
 
     if (strcmp(input, "exit") == 0) {
       printf("exit\n");
-      fflush(NULL);
       break;
     }
     if (strlen(input) == 0) {
@@ -148,7 +123,6 @@ int main() {
       printf("[%d] %s&\n", temp->jobid, temp->jobcmd);
       lastJob = temp;
     }
-    fflush(stdout);
     String *inputS = initString(input);
 
     StringList *piped = dividesByPipe(inputS);
@@ -161,7 +135,6 @@ int main() {
     for (int i = 0; i < piped->length; i++) {
       StringList *stringList = seperateString(piped->str[i]);
 
-      fflush(stdout);
       Command *firstCommand = NULL;
       Command *lastCommand = NULL;
       {
@@ -209,12 +182,7 @@ int main() {
     for (int i = 0; i < piped->length; i++) {
       Command *firstCommand = commandList.lst[i];
 
-      fflush(stdout);
       while (firstCommand != NULL) {
-        fflush(NULL);
-
-        fflush(NULL);
-
         Command *command = firstCommand;
 
         firstCommand = firstCommand->after;
@@ -282,15 +250,12 @@ int main() {
               }
               homePath[strlen(login) + 6] = '\0';
 
-              fflush(NULL);
               errno = 0;
 
               chdir(homePath);
               if (errno != 0) {
                 printf("%s: No such file or directory\n", homePath);
               }
-
-              fflush(NULL);
 
               goto Parent;
             }
@@ -323,9 +288,6 @@ int main() {
           }
 
           free(aim);
-          fflush(NULL);
-
-          fflush(NULL);
           goto Parent;
         }
 
@@ -335,7 +297,6 @@ int main() {
         }
         pid_t pid = fork();
 
-        fflush(NULL);
         if (command->inFile != 0) {
           stdin_ = dup(0);
           dup2(command->inFile, 0);
@@ -346,7 +307,6 @@ int main() {
           dup2(command->outFile, 1);
           close(command->outFile);
         }
-        fflush(NULL);
 
         if (pid == 0) {
           signal(SIGINT, SIG_DFL);
@@ -355,7 +315,6 @@ int main() {
           signal(SIGTTIN, SIG_DFL);
           signal(SIGTTOU, SIG_DFL);
           signal(SIGCHLD, SIG_DFL);
-          fflush(NULL);
           if ((strcmp(usArgChanged[0], "jobs") == 0)) {
             Job *temp = firstJob;
             while (true) {
@@ -379,19 +338,16 @@ int main() {
             char *pwdPath = NULL;
             pwdPath = getcwd(NULL, 0);
             printf("%s\n", pwdPath);
-            fflush(NULL);
             free(pwdPath);
             deleteFullCommandList(command);
             free(usArg);
             deleteChar2Array(usArgChanged);
-            fflush(NULL);
             free(commandList.lst);
             exit(0);
           } else {
             errno = 0;
 
             int status_code = execvp(usArgChanged[0], usArgChanged);
-            fflush(NULL);
 
             if (status_code == -1) {
               printf("%s", usArgChanged[0]);
@@ -399,7 +355,6 @@ int main() {
               exit(0);
             }
           }
-          fflush(NULL);
           return 0;
         } else {
           if (!isBack) {
@@ -409,8 +364,6 @@ int main() {
             lastJob->pid = pid;
           }
         Parent:
-          fflush(NULL);
-          fflush(NULL);
           if (stdin_ != 0) {
             close(0);
             dup2(stdin_, 0);
@@ -422,7 +375,6 @@ int main() {
             dup2(stdout_, 1);
             close(stdout_);
           }
-          fflush(NULL);
         }
 
         deleteFullCommandList(command);

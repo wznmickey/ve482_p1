@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "flush.h"
 const size_t ARRAY_LEN[10] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 void initArgList(ArgList *arg) {
   if (arg == NULL) {
@@ -139,7 +140,7 @@ StringList *seperateString(String *input) {
   while (true) {
     int place = getPlace(input, lastPlace, offset);
 
-    fflush(NULL);
+
     if (place == -1) {
       break;
     }
@@ -155,7 +156,7 @@ StringList *seperateString(String *input) {
       sLNum++;
       offset = 0;
       input = sp.st1;
-      fflush(stdout);
+
       lastPlace = 0;
       continue;
     }
@@ -171,12 +172,12 @@ StringList *seperateString(String *input) {
       sLNum++;
       offset = 0;
       input = sp.st1;
-      fflush(stdout);
+
       lastPlace = 0;
       continue;
     } else {
       printf("error");
-      fflush(NULL);
+
       lastPlace = 0;
       break;
     }
@@ -215,7 +216,7 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
   } else {
     output->outFile = 1;
   }
-  fflush(NULL);
+
   String *tempInput = input;
 
   if (((tempInput->start)[0] == '>') && ((tempInput->start)[1] == '>'))  // >>

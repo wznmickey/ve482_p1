@@ -21,7 +21,6 @@ String *deleteString(String *val) {
     return NULL;
   }
 
-  fflush(stdout);
   if ((val->used == 1) &&
       (val->mallocStart ==
        val))  // it is the first string and the full block is useless
@@ -159,7 +158,6 @@ char *getCharArray(String *st) { return st->start; }
 twoString getString(String *st, int placeLeft, int placeRight) {
   int getLen = placeRight - placeLeft;
   int getRemain = st->len - getLen;
-  fflush(NULL);
   String *remain = malloc(sizeof(String));
   String *get = malloc(sizeof(String));
 
