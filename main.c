@@ -154,7 +154,7 @@ int main() {
       temp->jobcmd = malloc(sizeof(char) * (strlen(input) + 1));
       strcpy(temp->jobcmd, input);
       printf("[%d] %s&\n", temp->jobid, temp->jobcmd);
-      lastJob=temp;
+      lastJob = temp;
     }
     fflush(stdout);
     String *inputS = initString(input);
@@ -275,30 +275,7 @@ int main() {
         }
         int stdin_ = 0;
         int stdout_ = 1;
-        if ((running) && (strcmp(usArgChanged[0], "jobs") == 0)) {
-          // printf("here");
-          pidList[i] = -1;
-          Job *temp = firstJob;
-          while (true) {
-            if (temp == NULL) {
-              // printf("1");
-              break;
-            }
-            if (temp->isValid == false) {
-              // {printf("2");
-              break;
-            }
-            printf("[%d] ", temp->jobid);
-            if (temp->state == running) {
-              printf("running ");
-            } else {
-              printf("done ");
-            }
-            printf("%s&\n", temp->jobcmd);
-            temp = temp->nextJob;
-          }
-          goto Parent;
-        }
+
         if ((running) && (strcmp(usArgChanged[0], "cd") == 0)) {
           pidList[i] = -1;
           char *aim;
@@ -413,7 +390,29 @@ int main() {
           signal(SIGTTOU, SIG_DFL);
           signal(SIGCHLD, SIG_DFL);
           fflush(NULL);
-          if (strcmp(usArgChanged[0], "pwd") == 0) {
+          if ((strcmp(usArgChanged[0], "jobs") == 0)) {
+            // printf("here");
+            Job *temp = firstJob;
+            while (true) {
+              if (temp == NULL) {
+                // printf("1");
+                break;
+              }
+              if (temp->isValid == false) {
+                // {printf("2");
+                break;
+              }
+              printf("[%d] ", temp->jobid);
+              if (temp->state == running) {
+                printf("running ");
+              } else {
+                printf("done ");
+              }
+              printf("%s&\n", temp->jobcmd);
+              temp = temp->nextJob;
+            }
+            exit(0);
+          } else if (strcmp(usArgChanged[0], "pwd") == 0) {
             char *pwdPath = NULL;
             pwdPath = getcwd(NULL, 0);
             printf("%s\n", pwdPath);
@@ -507,7 +506,7 @@ int main() {
   // while (true) {
   //   if (firstJob != NULL) {
   //     if (firstJob->isValid) {
-        
+
   //       free(firstJob->jobcmd);
   //     }
   //     // printf("free");
@@ -518,5 +517,5 @@ int main() {
   //     break;
   //   }
   // }
-  exit (0);
+  exit(0);
 }
