@@ -6,9 +6,10 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <errno.h>
 #include "String.h"
 #include "parse.h"
-#include <errno.h>
+
 void flush() {
   fflush(NULL);
   fflush(NULL);
@@ -89,8 +90,8 @@ int main() {
       offset = (int)strlen(input);
       goto READINPUT;
     }
-    if ( input[strlen(input) - 1]=='\n'){
-    input[strlen(input) - 1] = '\0';  // remove the \n at the end.
+    if (input[strlen(input) - 1] == '\n') {
+      input[strlen(input) - 1] = '\0';  // remove the \n at the end.
     }
     bool isNotEnd = checkIfNotEnd(input);
     if (isNotEnd) {
@@ -160,16 +161,18 @@ int main() {
       if (pipFile[0] != -1) {
         if (firstCommand->inFile != 0) {
           firstCommand->inFile = -4;
-        } else
+        } else {
           firstCommand->inFile = pipFile[0];
+        }
       }
       if ((piped->length) - i != 1) {
         pipe(pipFile);
         if (firstCommand->outFile != 1) {
           firstCommand->outFile = -5;
-        } else
+        } else {
           // printf("we have a pipe linked %d %d \n",pipFile[0],pipFile[1]);
           lastCommand->outFile = pipFile[1];
+        }
       }
 
       commandList.lst[i] = firstCommand;
