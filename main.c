@@ -13,7 +13,9 @@
 char input[1030];
 char singleLine[1030];  // It is used to handle questions directly after input
 void SIGINTReaction() {
-  if (strlen(input) == 0) printf("mumsh $ ");
+  if (strlen(input) == 0) {
+    printf("mumsh $ ");
+  }
   return;
 }
 int main() {
@@ -31,18 +33,14 @@ int main() {
   int currentJobId = 1;
   while (true) {
   RESTART:
-
     printf("mumsh $ ");
-
     memset(input, 0, sizeof(char) * 1026);
     memset(singleLine, 0, sizeof(char) * 1026);
-
     int offset = 0;
     bool running = true;
   READINPUT:
     fgets(input + offset, 1030 - 1, stdin);
     memcpy(singleLine, input, 1026);
-
     if (strlen(input) == 0) {
       printf("exit\n");
       break;
@@ -50,15 +48,12 @@ int main() {
     if (allSpace(input)) {
       goto RESTART;
     }
-
     while (true) {
       pid_t temp = waitpid(-1, NULL, WNOHANG);
       Job *tempJob = firstJob;
-
       if (temp <= 0) {
         break;
       }
-
       while (true) {
         if ((tempJob != NULL) && (tempJob->isValid) && (tempJob->pid == temp)) {
           tempJob->state = done;
@@ -71,13 +66,10 @@ int main() {
       }
     }
     changeQuote(singleLine);
-
     bool flagIsValid = isValid(singleLine);
-
     if (!flagIsValid) {
       goto RESTART;
     }
-
     bool ifComplete = checkIfComplete(input);
     if (!ifComplete) {
       printf("> ");
@@ -93,9 +85,7 @@ int main() {
       offset = (int)strlen(input);
       goto READINPUT;
     }
-
     changeQuote(input);
-
     if (strcmp(input, "exit") == 0) {
       printf("exit\n");
       break;
@@ -103,7 +93,6 @@ int main() {
     if (strlen(input) == 0) {
       goto RESTART;
     }
-
     bool isBack = checkIsBack(input);
     if (isBack) {
       Job *temp;
@@ -124,17 +113,13 @@ int main() {
       lastJob = temp;
     }
     String *inputS = initString(input);
-
     StringList *piped = dividesByPipe(inputS);
     int pipFile[2] = {-1, -1};
-
     CommandList commandList;
     commandList.length = piped->length;
-    commandList.lst = malloc(sizeof(Command) * (size_t)commandList.length);
-
+    commandList.lst = malloc(sizeof(Command *) * (size_t)commandList.length);
     for (int i = 0; i < piped->length; i++) {
       StringList *stringList = seperateString(piped->str[i]);
-
       Command *firstCommand = NULL;
       Command *lastCommand = NULL;
       {
@@ -158,7 +143,6 @@ int main() {
           parse(stringList->str[i], tempCommand, &tempInFile, &tempOutFile);
         }
       }
-
       if (pipFile[0] != -1) {
         if (firstCommand->inFile != 0) {
           firstCommand->inFile = -4;
@@ -174,17 +158,14 @@ int main() {
           lastCommand->outFile = pipFile[1];
         }
       }
-
       commandList.lst[i] = firstCommand;
       deleteStringList(stringList);
     }
     int pidList[1025];
     for (int i = 0; i < piped->length; i++) {
       Command *firstCommand = commandList.lst[i];
-
       while (firstCommand != NULL) {
         Command *command = firstCommand;
-
         firstCommand = firstCommand->after;
         if (command->isValid == false) {
           pidList[i] = -1;
@@ -207,18 +188,14 @@ int main() {
           printf("error: duplicated output redirection\n");
           running = false;
         }
-
         char **usArg = getArgFromCommand(command);
-
         char **usArgChanged = changeFromArg(usArg);
-
         if (usArgChanged[0] == NULL) {
           printf("error: missing program\n");
           running = false;
         }
         int stdin_ = 0;
         int stdout_ = 1;
-
         if ((running) && (strcmp(usArgChanged[0], "cd") == 0)) {
           pidList[i] = -1;
           char *aim;
@@ -227,7 +204,6 @@ int main() {
             char *login = getlogin();
             if (strcmp(login, "root") == 0) {
               char aim[] = "/root";
-
               errno = 0;
               chdir(aim);
               if (errno != 0) {
@@ -249,14 +225,11 @@ int main() {
                 homePath[6 + i] = login[i];
               }
               homePath[strlen(login) + 6] = '\0';
-
               errno = 0;
-
               chdir(homePath);
               if (errno != 0) {
                 printf("%s: No such file or directory\n", homePath);
               }
-
               goto Parent;
             }
           }
@@ -286,17 +259,14 @@ int main() {
           if (errno != 0) {
             printf("%s: No such file or directory\n", usArgChanged[1]);
           }
-
           free(aim);
           goto Parent;
         }
-
         if (!running) {
           pidList[i] = -1;
           goto Parent;
         }
         pid_t pid = fork();
-
         if (command->inFile != 0) {
           stdin_ = dup(0);
           dup2(command->inFile, 0);
@@ -307,7 +277,6 @@ int main() {
           dup2(command->outFile, 1);
           close(command->outFile);
         }
-
         if (pid == 0) {
           signal(SIGINT, SIG_DFL);
           signal(SIGQUIT, SIG_DFL);
@@ -344,41 +313,34 @@ int main() {
             deleteChar2Array(usArgChanged);
             free(commandList.lst);
             exit(0);
-          } else {
-            errno = 0;
-
-            int status_code = execvp(usArgChanged[0], usArgChanged);
-
-            if (status_code == -1) {
-              printf("%s", usArgChanged[0]);
-              printf(": command not found\n");
-              exit(0);
-            }
           }
-          return 0;
-        } else {
-          if (!isBack) {
-            pidList[i] = pid;
-          } else {
-            pidList[i] = -1;
-            lastJob->pid = pid;
+          errno = 0;
+          int status_code = execvp(usArgChanged[0], usArgChanged);
+          if (status_code == -1) {
+            printf("%s", usArgChanged[0]);
+            printf(": command not found\n");
+            exit(0);
           }
-        Parent:
-          if (stdin_ != 0) {
-            close(0);
-            dup2(stdin_, 0);
-            close(stdin_);
-          }
-
-          if (stdout_ != 1) {
-            close(1);
-            dup2(stdout_, 1);
-            close(stdout_);
-          }
+          exit(0);
         }
-
+        if (!isBack) {
+          pidList[i] = pid;
+        } else {
+          pidList[i] = -1;
+          lastJob->pid = pid;
+        }
+      Parent:
+        if (stdin_ != 0) {
+          close(0);
+          dup2(stdin_, 0);
+          close(stdin_);
+        }
+        if (stdout_ != 1) {
+          close(1);
+          dup2(stdout_, 1);
+          close(stdout_);
+        }
         deleteFullCommandList(command);
-
         free(usArg);
         deleteChar2Array(usArgChanged);
       }
