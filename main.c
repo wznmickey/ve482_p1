@@ -27,8 +27,8 @@ void flush() {
     flush();            \
   } while (0);
 
-char input[2048];
-char singleLine[2048];  // It is used to handle questions directly after input
+char input[1030];
+char singleLine[1030];  // It is used to handle questions directly after input
 void SIGINTReaction() {
   if (strlen(input) == 0) printf("mumsh $ ");
   return;
@@ -56,14 +56,14 @@ int main() {
     fflush(stdout);
     fflush(NULL);
 
-    memset(input, 0, sizeof(char) * 2048);
-    memset(singleLine, 0, sizeof(char) * 2048);
+    memset(input, 0, sizeof(char) * 1026);
+    memset(singleLine, 0, sizeof(char) * 1026);
 
     int offset = 0;
     bool running = true;
   READINPUT:
-    fgets(input + offset, 2048 - 1, stdin);
-    memcpy(singleLine, input, 2048);
+    fgets(input + offset, 1030 - 1, stdin);
+    memcpy(singleLine, input, 1026);
 
     fflush(stdin);
     fflush(stdout);
