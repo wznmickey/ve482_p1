@@ -22,7 +22,6 @@ void initArgList(ArgList *arg) {
   arg->argvIndex = 0;
   return;
 }
-
 void deleteArgList(ArgList *arg) {
   if (arg == NULL) {
     return;
@@ -34,22 +33,18 @@ void deleteArgList(ArgList *arg) {
   free(arg->argc);
   free(arg);
 }
-
 void pureMoveArgList(ArgList *arg, ArgList *dst) {
   if (arg == NULL || dst == NULL) {
     return;
   }
   dst->argv = arg->argv;
   dst->argvIndex = arg->argvIndex;
-
   for (int i = 0; i < arg->argv; i++) {
     dst->argc[i] = arg->argc[i];
   }
   free(arg->argc);
-
   return;
 }
-
 void extendArgList(ArgList **arg) {
   if (*arg == NULL) {
     return;
@@ -63,17 +58,14 @@ void extendArgList(ArgList **arg) {
     temp->argc = tt;
     pureMoveArgList(*arg, temp);
     free(*arg);  // not sure
-
     *arg = temp;
   }
   return;
 }
-
 bool emplaceArgList(ArgList **arg, String *val) {
   if (arg == NULL) {
     return false;
   }
-
   extendArgList(arg);
   (*arg)->argc[(*arg)->argv] = copyString(val);
   deleteString(val);
@@ -82,13 +74,11 @@ bool emplaceArgList(ArgList **arg, String *val) {
 }
 char **getArgFromArgList(ArgList *arg) {
   char **val = malloc(sizeof(char *) * (size_t)(arg->argv + 1));
-
   int toPush = 0;
-
   for (int i = 0; i < arg->argv; i++) {
-    if (strcmp(getCharArray((arg->argc[i])), "") == 0)
+    if (strcmp(getCharArray((arg->argc[i])), "") == 0) {
       continue;  // remove empty args.
-
+    }
     val[toPush] = getCharArray((arg->argc[i]));
     toPush++;
   }
@@ -98,7 +88,6 @@ char **getArgFromArgList(ArgList *arg) {
 char **getArgFromCommand(Command *output) {
   return getArgFromArgList((output->args));
 }
-
 int getPlace(String *input, int before, int offset) {
   for (int i = before + offset; i < input->len; i++) {
     switch ((input->start)[i]) {
@@ -110,7 +99,6 @@ int getPlace(String *input, int before, int offset) {
   }
   return -1;
 }
-
 StringList *dividesByPipe(String *st) {
   String *sL[1025];  // less than 1024, 1 as buffer
   int sLNum = 0;
@@ -131,7 +119,6 @@ StringList *dividesByPipe(String *st) {
   }
   return output;
 }
-
 StringList *seperateString(String *input) {
   String *sL[1025];  // less than 1024, 1 as buffer
   int sLNum = 0;
@@ -139,8 +126,6 @@ StringList *seperateString(String *input) {
   int offset = 0;
   while (true) {
     int place = getPlace(input, lastPlace, offset);
-
-
     if (place == -1) {
       break;
     }
@@ -156,7 +141,6 @@ StringList *seperateString(String *input) {
       sLNum++;
       offset = 0;
       input = sp.st1;
-
       lastPlace = 0;
       continue;
     }
@@ -172,15 +156,11 @@ StringList *seperateString(String *input) {
       sLNum++;
       offset = 0;
       input = sp.st1;
-
       lastPlace = 0;
       continue;
-    } else {
-      printf("error");
-
-      lastPlace = 0;
-      break;
     }
+    printf("error");
+    break;
   }
   sL[sLNum] = input;
   sLNum++;
@@ -190,16 +170,13 @@ StringList *seperateString(String *input) {
   for (int i = 0; i < sLNum; i++) {
     (output->str)[i] = sL[i];
   }
-
   return output;
 }
-
 void deleteStringList(StringList *list) {
   free(list->str);
   free(list);
   return;
 }
-
 void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
   if (output == NULL) {
     return;
@@ -216,14 +193,14 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
   } else {
     output->outFile = 1;
   }
-
   String *tempInput = input;
-
   if (((tempInput->start)[0] == '>') && ((tempInput->start)[1] == '>'))  // >>
   {
     char *i;
     for (i = (tempInput->start) + 2;; i++) {
-      if ((*i) != ' ') break;
+      if ((*i) != ' ') {
+        break;
+      }
     }
     char *tt = changeSingleCharArray(i);
     errno = 0;
@@ -243,21 +220,19 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
       } else {
         output->before->outFile = temp;
       }
-
     } else {
       *tempOutFile = temp;
     }
-
     deleteString(tempInput);
-
     return;
   }
-
   if ((tempInput->start)[0] == '>')  // >
   {
     char *i;
     for (i = (tempInput->start) + 1;; i++) {
-      if ((*i) != ' ') break;
+      if ((*i) != ' ') {
+        break;
+      }
     }
     char *tt = changeSingleCharArray(i);
     errno = 0;
@@ -283,12 +258,13 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     deleteString(tempInput);
     return;
   }
-
   if ((tempInput->start)[0] == '<')  // <
   {
     char *i;
     for (i = (tempInput->start) + 1;; i++) {
-      if ((*i) != ' ') break;
+      if ((*i) != ' ') {
+        break;
+      }
     }
     char *tt = changeSingleCharArray(i);
     errno = 0;
@@ -314,11 +290,9 @@ void parse(String *input, Command *output, int *tempInFile, int *tempOutFile) {
     deleteString(tempInput);
     return;
   }
-
   output->args = malloc(sizeof(ArgList));
   initArgList(output->args);
   output->mainCommand = copyString(input);
-
   while (true) {
     String *tempInputNew = spiltString(tempInput, ' ');
     emplaceArgList(&output->args, tempInput);
@@ -460,7 +434,6 @@ char **changeFromArg(char **arg) {
 char *changeSingleCharArray(char *st) {
   int index = 0;
   int len = (int)strlen(st);
-
   char *val = malloc(sizeof(char) * (size_t)(len + 1));
   for (int i = 0; i < len; i++) {
     if (((st)[i]) != DROP) {
@@ -474,36 +447,30 @@ char *changeSingleCharArray(char *st) {
         case RIGHTARROW: {
           ((val)[index]) = '>';
           index++;
-
           continue;
         }
         case SPACE: {
           ((val)[index]) = ' ';
           index++;
-
           continue;
         }
         case PIPE: {
           ((val)[index]) = '|';
           index++;
-
           continue;
         }
         case SINGLE: {
           ((val)[index]) = '\'';
           index++;
-
           continue;
         }
         case DOUBLE: {
           ((val)[index]) = '"';
           index++;
-
           continue;
         }
         default: {
           index++;
-
           continue;
         }
       }

@@ -38,10 +38,8 @@ String *deleteString(String *val) {
     } else {
       if (val->mallocStart ==
           val) {  // it is the first string but the full block is useful
-
         val->used--;
       } else {  // it is not the first string and the full block is useful
-
         val->mallocStart->used--;
         free(val);
       }
@@ -88,7 +86,6 @@ String *spiltString(String *st, char aim) {
     return NULL;  // failed
   }
   String *val = malloc(sizeof(String));
-
   val->mallocStart = st->mallocStart;
   val->start = st->start + find + 1;
   val->len = (int)strlen(val->start);
@@ -100,13 +97,11 @@ String *spiltString(String *st, char aim) {
 }
 String *spiltStringByIndex(String *st, int find) {
   String *val = malloc(sizeof(String));
-
   val->mallocStart = st->mallocStart;
   val->start = st->start + find + 1;
   val->len = (int)strlen(val->start);
   val->used =
       1;  // It is meaningless. Just to init. The value will not be updated.
-
   String *ans = copyString(val);
   free(val);
   st->start[find + 1] = '\0';
@@ -116,13 +111,11 @@ String *spiltStringByIndex(String *st, int find) {
 
 String *spiltStringByIndexLevel2(String *st, int find) {
   String *val = malloc(sizeof(String));
-
   val->mallocStart = st->mallocStart;
   val->start = st->start + find + 1;
   val->len = (int)strlen(val->start);
   val->used =
       1;  // It is meaningless. Just to init. The value will not be updated.
-
   String *ans = copyString(val);
   free(val);
   st->start[find + 1] = '\0';
@@ -160,16 +153,12 @@ twoString getString(String *st, int placeLeft, int placeRight) {
   int getRemain = st->len - getLen;
   String *remain = malloc(sizeof(String));
   String *get = malloc(sizeof(String));
-
   remain->start = malloc(sizeof(char) * (size_t)(getRemain + 1));
   get->start = malloc(sizeof(char) * (size_t)(getLen + 1));
-
   remain->mallocStart = remain;
   get->mallocStart = get;
-
   remain->used = 1;
   get->used = 1;
-
   twoString ans;
   ans.st1 = remain;
   ans.st2 = get;
@@ -186,18 +175,17 @@ twoString getString(String *st, int placeLeft, int placeRight) {
   }
   (get->start)[toGetI] = '\0';
   (remain->start)[remainI] = '\0';
-
   get->len = (int)strlen(get->start);
-
   remain->len = (int)strlen(remain->start);
-
   deleteString(st);
   return ans;
 }
 void deleteChar2Array(char **array) {
   int index = 0;
   while (true) {
-    if (array[index] == NULL) break;
+    if (array[index] == NULL) {
+      break;
+    }
     free(array[index]);
     index++;
   }
