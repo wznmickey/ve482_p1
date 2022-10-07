@@ -39,7 +39,6 @@ int main() {
   signal(SIGTSTP, SIG_IGN);
   signal(SIGTTIN, SIG_IGN);
   signal(SIGTTOU, SIG_IGN);
-  // signal(SIGCHLD, SIG_IGN);
   setpgid(getpid(), getpid());
   tcsetpgrp(STDOUT_FILENO, getpid());
   tcsetpgrp(STDIN_FILENO, getpid());
@@ -56,12 +55,10 @@ int main() {
     fflush(stdin);
     fflush(stdout);
     fflush(NULL);
-    // AGAIN:
+
     memset(input, 0, sizeof(char) * 2048);
     memset(singleLine, 0, sizeof(char) * 2048);
 
-    // char ch;
-    // int tempIndex = 0;
     int offset = 0;
     bool running = true;
   READINPUT:
@@ -81,14 +78,13 @@ int main() {
     while (true) {
       pid_t temp = waitpid(-1, NULL, WNOHANG);
       Job *tempJob = firstJob;
-      // printf("stop %d\n", temp);
+
       if (temp <= 0) {
         break;
       }
-      // printf("stop");
+
       while (true) {
         if ((tempJob != NULL) && (tempJob->isValid) && (tempJob->pid == temp)) {
-          // printf("set\n");
           tempJob->state = done;
           break;
         }
@@ -122,12 +118,9 @@ int main() {
       goto READINPUT;
     }
 
-    // TODO : come with new line if not complete
-
     changeQuote(input);
 
     if (strcmp(input, "exit") == 0) {
-      // EXIT:
       printf("exit\n");
       fflush(NULL);
       break;
@@ -135,7 +128,6 @@ int main() {
     if (strlen(input) == 0) {
       goto RESTART;
     }
-    // printf("1\n");
 
     bool isBack = checkIsBack(input);
     if (isBack) {
@@ -158,8 +150,6 @@ int main() {
     }
     fflush(stdout);
     String *inputS = initString(input);
-    // Command *command = malloc(sizeof(Command));
-    // initCommand(command);
 
     StringList *piped = dividesByPipe(inputS);
     int pipFile[2] = {-1, -1};
@@ -167,12 +157,9 @@ int main() {
     CommandList commandList;
     commandList.length = piped->length;
     commandList.lst = malloc(sizeof(Command) * (size_t)commandList.length);
-    // printf("after pipe %d \n", piped->length);
 
     for (int i = 0; i < piped->length; i++) {
       StringList *stringList = seperateString(piped->str[i]);
-      // deleteString(inputS);
-      // printf("2\n");
 
       fflush(stdout);
       Command *firstCommand = NULL;
@@ -211,14 +198,12 @@ int main() {
         if (firstCommand->outFile != 1) {
           firstCommand->outFile = -5;
         } else {
-          // printf("we have a pipe linked %d %d \n",pipFile[0],pipFile[1]);
           lastCommand->outFile = pipFile[1];
         }
       }
 
       commandList.lst[i] = firstCommand;
       deleteStringList(stringList);
-      // printf("3\n");
     }
     int pidList[1025];
     for (int i = 0; i < piped->length; i++) {
@@ -227,12 +212,11 @@ int main() {
       fflush(stdout);
       while (firstCommand != NULL) {
         fflush(NULL);
-        // printf("1111\n");
+
         fflush(NULL);
 
         Command *command = firstCommand;
-        // unsigned long long int temp = command;
-        // printf("use command %lld", temp);
+
         firstCommand = firstCommand->after;
         if (command->isValid == false) {
           pidList[i] = -1;
@@ -255,19 +239,10 @@ int main() {
           printf("error: duplicated output redirection\n");
           running = false;
         }
-        // printf("%d\n", command->inFile);
 
         char **usArg = getArgFromCommand(command);
 
         char **usArgChanged = changeFromArg(usArg);
-        // printf("%s \n",usArgChanged[0]);
-        // for (int i = 0; i < 1000; i++) {
-        //   if (usArg[i] == NULL) break;
-
-        //   // printf(" arg %s \n",usArg[i]);
-        // }
-        // int x = (strcmp(usArg[0], "cd"));
-        // printf("%s\n",usArg[0]);
 
         if (usArgChanged[0] == NULL) {
           printf("error: missing program\n");
@@ -284,7 +259,7 @@ int main() {
             char *login = getlogin();
             if (strcmp(login, "root") == 0) {
               char aim[] = "/root";
-              // free(login);
+
               errno = 0;
               chdir(aim);
               if (errno != 0) {
@@ -306,8 +281,7 @@ int main() {
                 homePath[6 + i] = login[i];
               }
               homePath[strlen(login) + 6] = '\0';
-              // strcat(login, homePath);
-              // printf("%s \n",homePath);
+
               fflush(NULL);
               errno = 0;
 
@@ -317,21 +291,16 @@ int main() {
               }
 
               fflush(NULL);
-              // free(login);
+
               goto Parent;
             }
-            // char aim[] = "";
-            // chdir(aim);
-            // goto Parent;
           }
           if (usArgChanged[1] != NULL &&
               usArgChanged[2] != NULL)  // to many arguments
           {
             goto Parent;
           }
-          if ((usArgChanged[1][0] != '/')
-              // && ((usArg[1][0] != '~'))
-              )  // relative path
+          if ((usArgChanged[1][0] != '/'))  // relative path
           {
             aim = malloc(sizeof(char) * (2 + 1 + strlen(usArgChanged[1])));
             aim[0] = '.';
@@ -355,9 +324,7 @@ int main() {
 
           free(aim);
           fflush(NULL);
-          // deleteFullCommandList(command);
-          // deleteChar2Array(usArgChanged);
-          // free(usArg);
+
           fflush(NULL);
           goto Parent;
         }
@@ -368,7 +335,6 @@ int main() {
         }
         pid_t pid = fork();
 
-        // printf("in %d out %d\n", command->inFile, command->outFile);
         fflush(NULL);
         if (command->inFile != 0) {
           stdin_ = dup(0);
@@ -391,15 +357,12 @@ int main() {
           signal(SIGCHLD, SIG_DFL);
           fflush(NULL);
           if ((strcmp(usArgChanged[0], "jobs") == 0)) {
-            // printf("here");
             Job *temp = firstJob;
             while (true) {
               if (temp == NULL) {
-                // printf("1");
                 break;
               }
               if (temp->isValid == false) {
-                // {printf("2");
                 break;
               }
               printf("[%d] ", temp->jobid);
@@ -427,24 +390,12 @@ int main() {
           } else {
             errno = 0;
 
-            // printf("Will use ");
-            // for (int i = 0; i < 1000; i++) {
-            //   if (usArgChanged[i] == NULL) break;
-            //   printf("%s ", usArgChanged[i]);
-            // }
-            // printf("\n");
             int status_code = execvp(usArgChanged[0], usArgChanged);
             fflush(NULL);
 
             if (status_code == -1) {
               printf("%s", usArgChanged[0]);
               printf(": command not found\n");
-              // printf("Command wrong with error code %d.\n", errno);
-              // deleteFullCommandList(command);
-              // free(usArg);
-              // fflush(NULL);
-              // free(commandList.lst);
-              // free(commandList.lst);
               exit(0);
             }
           }
@@ -459,15 +410,12 @@ int main() {
           }
         Parent:
           fflush(NULL);
-          // waitpid(pid, NULL, 0);
           fflush(NULL);
-          // printf("well\n");
           if (stdin_ != 0) {
             close(0);
             dup2(stdin_, 0);
             close(stdin_);
           }
-          // printf("well2\n");
 
           if (stdout_ != 1) {
             close(1);
@@ -475,24 +423,14 @@ int main() {
             close(stdout_);
           }
           fflush(NULL);
-          // printf("well3\n");
         }
-        // printf("well4\n");
 
         deleteFullCommandList(command);
-        // printf("well5\n");
 
         free(usArg);
         deleteChar2Array(usArgChanged);
-        // printf("well6\n");
       }
-      // printf("well7\n");
     }
-    // for (int i=0;i<commandList.length;i++)
-    // {
-    //   deleteFullCommandList(commandList.lst[i]);
-    // }
-    // for (int i = 0; i < piped->length; i++) {
     for (int i = 0; i < piped->length; i++) {
       if (pidList[i] != -1) {
         waitpid(pidList[i], NULL, 0);
@@ -500,22 +438,7 @@ int main() {
     }
     free(piped->str);
     free(piped);
-    // }
     free(commandList.lst);
   }
-  // while (true) {
-  //   if (firstJob != NULL) {
-  //     if (firstJob->isValid) {
-
-  //       free(firstJob->jobcmd);
-  //     }
-  //     // printf("free");
-  //     Job *temp = firstJob;
-  //     firstJob = firstJob->nextJob;
-  //     free(temp);
-  //   } else {
-  //     break;
-  //   }
-  // }
   exit(0);
 }
