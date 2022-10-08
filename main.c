@@ -31,6 +31,8 @@ int main() {
   firstJob->isValid = false;
   Job *lastJob = firstJob;
   int currentJobId = 1;
+  char *lastPath = NULL;
+  lastPath = getcwd(NULL, 0);
   while (true) {
   RESTART:
     printf("mumsh $ ");
@@ -205,10 +207,15 @@ int main() {
             if (strcmp(login, "root") == 0) {
               char aim[] = "/root";
               errno = 0;
+              char *tempPath = getcwd(NULL, 0);
               chdir(aim);
               if (errno != 0) {
                 printf("%s: No such file or directory\n", aim);
+                free(tempPath);
+                goto Parent;
               }
+              free(lastPath);
+              lastPath = tempPath;
               goto Parent;
 
             } else {
@@ -226,12 +233,74 @@ int main() {
               }
               homePath[strlen(login) + 6] = '\0';
               errno = 0;
+              char *tempPath = getcwd(NULL, 0);
               chdir(homePath);
               if (errno != 0) {
                 printf("%s: No such file or directory\n", homePath);
+                free(tempPath);
+                goto Parent;
               }
+              free(lastPath);
+              lastPath = tempPath;
               goto Parent;
             }
+          }
+          if (usArgChanged[1][0] == '-') {
+            errno = 0;
+            char *tempPath = getcwd(NULL, 0);
+            chdir(lastPath);
+            if (errno != 0) {
+              printf("%s: No such file or directory\n", lastPath);
+              free(tempPath);
+              goto Parent;
+            }
+            printf("%s\n", lastPath);
+            free(lastPath);
+            lastPath = tempPath;
+            goto Parent;
+          }
+          if (usArgChanged[1][0] == '~') {
+            char *login = getlogin();
+            char *homePath;
+            if (strcmp(login, "root") == 0) {
+              char aim[] = "/root";
+              homePath = malloc(sizeof(char) * (strlen(aim) + 1));
+              strcpy(homePath, aim);
+            } else {
+              char aim[6 + 1 + strlen(login)];  // man useradd can allow name
+                                                // of maximum of 32 chars.
+              aim[0] = '/';
+              aim[1] = 'h';
+              aim[2] = 'o';
+              aim[3] = 'm';
+              aim[4] = 'e';
+              aim[5] = '/';
+              for (int i = 0; i < (int)strlen(login); i++) {
+                aim[6 + i] = login[i];
+              }
+              aim[strlen(login) + 6] = '\0';
+              homePath = malloc(sizeof(char) * (strlen(aim) + 1));
+              strcpy(homePath, aim);
+            }
+
+            char newPath[strlen(homePath) + 2 + strlen(usArgChanged[1])];
+            strcpy(newPath, homePath);
+            free(homePath);
+            size_t temp = strlen(newPath);
+            strcpy(newPath + temp, usArgChanged[1] + 1);
+
+            errno = 0;
+            char *tempPath = getcwd(NULL, 0);
+            chdir(newPath);
+            if (errno != 0) {
+              printf("%s: No such file or directory\n", newPath);
+              free(tempPath);
+              goto Parent;
+            }
+            free(lastPath);
+            lastPath = tempPath;
+
+            goto Parent;
           }
           if (usArgChanged[1] != NULL &&
               usArgChanged[2] != NULL)  // to many arguments
@@ -255,11 +324,17 @@ int main() {
             aim[strlen(usArgChanged[1])] = '\0';
           }
           errno = 0;
+          char *tempPath = getcwd(NULL, 0);
           chdir(aim);
           if (errno != 0) {
             printf("%s: No such file or directory\n", usArgChanged[1]);
+            free(tempPath);
+            goto Parent;
           }
           free(aim);
+          free(lastPath);
+          lastPath = tempPath;
+
           goto Parent;
         }
         if (!running) {
