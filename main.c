@@ -267,8 +267,7 @@ int main() {
               homePath = malloc(sizeof(char) * (strlen(aim) + 1));
               strcpy(homePath, aim);
             } else {
-              char aim[6 + 1 + strlen(login)];  // man useradd can allow name
-                                                // of maximum of 32 chars.
+              char * aim = malloc(sizeof(char) * (6 + 1 + strlen(login)));
               aim[0] = '/';
               aim[1] = 'h';
               aim[2] = 'o';
@@ -281,6 +280,7 @@ int main() {
               aim[strlen(login) + 6] = '\0';
               homePath = malloc(sizeof(char) * (strlen(aim) + 1));
               strcpy(homePath, aim);
+              free(aim);
             }
 
             char newPath[strlen(homePath) + 2 + strlen(usArgChanged[1])];
