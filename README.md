@@ -13,8 +13,11 @@
 ### `cd` command support
 
 Absolute path and relative path are supported. 
+
 If there is no args, the home path will be the default path.
+
 If there are more than 1 args, the command will have effects.
+
 Note : *`~` is not used as home path. Instead, it is viewed as a simple character.*
 
 ### `pwd` command support
@@ -50,10 +53,9 @@ Use given `CMakeLists.txt` to compile. (If you failed to compile, use `-DCMAKE_C
 ## How to use
 This shell can be launched by `mumsh` if you use the given CMAKE file.
 
-Now running other exec files with arguments are supported. Other features will come soon.
 
-Now `mumsh` is in rapid development. 
+
 
 ## Bug report
 
-Please use the given  `CMakeLists.txt` to compile and use `mumsh_memory_check` to reappear the bug and report if there are any issues with memory. If there is any problem with using issues, you can directly mailto:wznmickey@sjtu.edu.cn .
+Now `mumsh` is in rapid development and there are many bugs that does not be found. If you find one bug, please use the given  `CMakeLists.txt` to compile and use `mumsh_memory_check` to reappear the bug and report if there are any issues with memory. If there is any problem with using issues, you can directly mailto:wznmickey@sjtu.edu.cn .
