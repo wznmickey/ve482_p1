@@ -12,13 +12,13 @@
 
 ### `cd` command support
 
-Absolute path and relative path are supported. 
+Absolute path and relative path are supported. (`~` are allowed)
 
 If there is no args, the home path will be the default path.
 
 If there are more than 1 args, the command will have effects.
 
-Note : *`~` is not used as home path. Instead, it is viewed as a simple character.*
+Note : `cd -` will return to the previous directory. If there is no `cd` before, it will remain the directory.
 
 ### `pwd` command support
 
