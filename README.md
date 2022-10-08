@@ -12,7 +12,7 @@
 
 ### `cd` command support
 
-Absolute path and relative path are supported. (`~` are allowed)
+Absolute path and relative path are supported. (`~` is supported as home path)
 
 If there is no args, the home path will be the default path.
 
