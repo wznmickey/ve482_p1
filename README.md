@@ -1,6 +1,6 @@
 # mumsh
 
-**A new bash in C.** [![Build Status](https://focs.ji.sjtu.edu.cn:2222/api/badges/ECE482-22/ZiningWang520370910042-p1/status.svg)](https://focs.ji.sjtu.edu.cn:2222/ECE482-22/ZiningWang520370910042-p1)
+**A developing bash in C.** [![Build Status](https://focs.ji.sjtu.edu.cn:2222/api/badges/ECE482-22/ZiningWang520370910042-p1/status.svg)](https://focs.ji.sjtu.edu.cn:2222/ECE482-22/ZiningWang520370910042-p1)
 
 ## Features
 
