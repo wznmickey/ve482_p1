@@ -32,17 +32,17 @@ It will gives all the background jobs as well as state (`running` or `done`)
 
 case 1. trying to running not existing exec file.
 
-case 2. trying to use input redirection of not existing file
+case 2. trying to use input redirection of not existing file.
 
-case 3. trying to write or append to files that does not exist
+case 3. trying to write or append to files that does not exist.
 
-case 4. trying to have more than one input redirection
+case 4. trying to have more than one input redirection.
 
-case 5. trying to have more than one output redirection
+case 5. trying to have more than one output redirection.
 
-case 6. trying to running commands with wrong syntax
+case 6. trying to running commands with wrong syntax.
 
-case 7. trying to pipe to empty program (e.g. `echo test | | cat`)
+case 7. trying to exec a program with empty character.
 
 case 8. trying to `cd` directory that does not exist.
 
