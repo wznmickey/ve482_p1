@@ -540,12 +540,19 @@ bool isValid(char *input) {
   }
   return true;
 }
-bool checkIsBack(char *input) {
+int checkIsBack(char *input) {
   size_t len =
-      strlen(input);  // The case of len ==0 should not happen in this function.
-  if (input[len - 1] == '&') {
-    input[len - 1] = '\0';  // delete token
-    return true;
+      strlen(input); 
+  int index = ((int)len) - 1;
+  while ((index >= 0) && (input[index] == ' ')) {
+    index--;
   }
-  return false;
+  if (index < 0) {
+    return -1;
+  }
+  if (input[index] == '&') {
+    input[index] = '\0';  // delete token
+    return (((int)len) - index + 1);
+  }
+  return -1;
 }

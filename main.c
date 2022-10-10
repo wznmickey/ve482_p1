@@ -95,7 +95,13 @@ int main() {
     if (strlen(input) == 0) {
       goto RESTART;
     }
-    bool isBack = checkIsBack(input);
+    int backNum = checkIsBack(input);
+    bool isBack;
+    if (backNum == -1) {
+      isBack = false;
+    } else {
+      isBack = true;
+    }
     if (isBack) {
       Job *temp;
       if (!(lastJob->isValid)) {
@@ -111,7 +117,10 @@ int main() {
       temp->state = running;
       temp->jobcmd = malloc(sizeof(char) * (strlen(input) + 1));
       strcpy(temp->jobcmd, input);
-      printf("[%d] %s&\n", temp->jobid, temp->jobcmd);
+      temp->emptySpaceBehind = backNum;
+      printf("[%d] %s&", temp->jobid, temp->jobcmd);
+      for (int i = 0; i < temp->emptySpaceBehind; i++) printf(" ");
+      printf("\n");
       lastJob = temp;
     }
     String *inputS = initString(input);
@@ -267,7 +276,7 @@ int main() {
               homePath = malloc(sizeof(char) * (strlen(aim) + 1));
               strcpy(homePath, aim);
             } else {
-              char * aim = malloc(sizeof(char) * (6 + 1 + strlen(login)));
+              char *aim = malloc(sizeof(char) * (6 + 1 + strlen(login)));
               aim[0] = '/';
               aim[1] = 'h';
               aim[2] = 'o';
@@ -374,7 +383,11 @@ int main() {
               } else {
                 printf("done ");
               }
-              printf("%s&\n", temp->jobcmd);
+              printf("%s&", temp->jobcmd);
+              for (int i = 0; i < temp->emptySpaceBehind; i++) {
+                printf(" ");
+              }
+              printf("\n");
               temp = temp->nextJob;
             }
             exit(0);

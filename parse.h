@@ -53,7 +53,9 @@ typedef struct Job {
 
   bool isValid;
 
-  int pid;  // for possible use
+  int pid;
+
+  int emptySpaceBehind;  // how many space after &
 } Job;
 
 char **getArgFromCommand(Command *output);
@@ -70,5 +72,5 @@ char **changeFromArg(char **arg);
 char *changeSingleCharArray(char *st);
 bool checkIfNotEnd(char *input);
 bool isValid(char *input);
-bool checkIsBack(char *input);
+int checkIsBack(char *input);
 #endif
